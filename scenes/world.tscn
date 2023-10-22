@@ -1,0 +1,71 @@
+[gd_scene load_steps=10 format=3 uid="uid://dh4pwgtu6u1q0"]
+
+[ext_resource type="Script" path="res://scenes/meshtest.gd" id="1_if4l6"]
+[ext_resource type="Material" uid="uid://btqk6iql7oemc" path="res://scenes/test/testmat.tres" id="1_uclou"]
+[ext_resource type="Script" path="res://scenes/world.gd" id="1_vuntx"]
+[ext_resource type="Script" path="res://scenes/camera/camera_controller.gd" id="2_m1nwf"]
+[ext_resource type="Script" path="res://scenes/world/chunks_loader.gd" id="4_tjww5"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_xs8g4"]
+sky_top_color = Color(0.384314, 0.454902, 0.54902, 1)
+sky_horizon_color = Color(0.646078, 0.655975, 0.670505, 1)
+ground_horizon_color = Color(0.646078, 0.655975, 0.670505, 1)
+
+[sub_resource type="Sky" id="Sky_75amc"]
+sky_material = SubResource("ProceduralSkyMaterial_xs8g4")
+
+[sub_resource type="Environment" id="Environment_u5qh4"]
+background_mode = 2
+sky = SubResource("Sky_75amc")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_5twgk"]
+_surfaces = [{
+"aabb": AABB(0, 0, 0, 1, 1, 1),
+"attribute_data": PackedByteArray(0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63),
+"format": 4115,
+"index_count": 36,
+"index_data": PackedByteArray(0, 0, 3, 0, 2, 0, 2, 0, 1, 0, 0, 0, 4, 0, 5, 0, 6, 0, 6, 0, 7, 0, 4, 0, 8, 0, 9, 0, 10, 0, 10, 0, 11, 0, 8, 0, 12, 0, 13, 0, 14, 0, 14, 0, 15, 0, 12, 0, 16, 0, 17, 0, 18, 0, 18, 0, 19, 0, 16, 0, 20, 0, 21, 0, 22, 0, 22, 0, 23, 0, 20, 0),
+"material": ExtResource("1_uclou"),
+"primitive": 3,
+"vertex_count": 24,
+"vertex_data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 127, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 255, 127, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 255, 127, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 255, 127, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 255, 127, 255, 255, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 255, 127, 255, 255, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 255, 127, 255, 255, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 255, 127, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 127, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 255, 127, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 255, 127, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 255, 127, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 127, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 255, 255, 255, 127, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 255, 255, 255, 127, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 255, 255, 255, 127, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 63, 255, 127, 255, 127, 0, 0, 0, 0, 0, 0, 128, 63, 0, 0, 128, 63, 255, 127, 255, 127, 0, 0, 128, 63, 0, 0, 128, 63, 0, 0, 128, 63, 255, 127, 255, 127, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 255, 127, 255, 127)
+}]
+
+[node name="World" type="Node3D"]
+script = ExtResource("1_vuntx")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_u5qh4")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.846193, -0.532876, -2.32928e-08, -0.266438, 0.423097, 0.866025, -0.461484, 0.732825, -0.5, 0, 10, -18)
+shadow_enabled = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(32, 0, 0, 0, 32, 0, 0, 0, 32, 0, 0, 0)
+mesh = SubResource("ArrayMesh_5twgk")
+script = ExtResource("1_if4l6")
+
+[node name="Control" type="Control" parent="MeshInstance3D"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="MeshInstance3D/Control"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "position: (35, 24.5743, 31)"
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.670491, -0.181295, 0.719426, 0, 0.969685, 0.24436, -0.741917, -0.163841, 0.650165, 35, 24.5743, 31)
+current = true
+script = ExtResource("2_m1nwf")
+
+[node name="Chunks" type="Node3D" parent="."]
+script = ExtResource("4_tjww5")
+
+[connection signal="ready" from="Chunks" to="Camera3D" method="_ready_signal"]
