@@ -4,3 +4,8 @@
 
 [resource]
 albedo_texture = ExtResource("1_m0xjy")
+metallic_specular = 0.0
+ao_light_affect = 0.46
+subsurf_scatter_strength = 0.54
+detail_mask = ExtResource("1_m0xjy")
+billboard_keep_scale = true

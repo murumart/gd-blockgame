@@ -1,8 +1,9 @@
-[gd_scene load_steps=10 format=3 uid="uid://dh4pwgtu6u1q0"]
+[gd_scene load_steps=11 format=3 uid="uid://dh4pwgtu6u1q0"]
 
 [ext_resource type="Script" path="res://scenes/meshtest.gd" id="1_if4l6"]
 [ext_resource type="Material" uid="uid://btqk6iql7oemc" path="res://scenes/test/testmat.tres" id="1_uclou"]
 [ext_resource type="Script" path="res://scenes/world.gd" id="1_vuntx"]
+[ext_resource type="Script" path="res://scenes/world/world_blocks.gd" id="2_66rso"]
 [ext_resource type="Script" path="res://scenes/camera/camera_controller.gd" id="2_m1nwf"]
 [ext_resource type="Script" path="res://scenes/world/chunks_loader.gd" id="4_tjww5"]
 
@@ -36,6 +37,9 @@ _surfaces = [{
 [node name="World" type="Node3D"]
 script = ExtResource("1_vuntx")
 
+[node name="WorldBlocks" type="Node" parent="."]
+script = ExtResource("2_66rso")
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_u5qh4")
 
@@ -58,7 +62,11 @@ offset_bottom = 40.0
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
-text = "position: (35, 24.5743, 31)"
+text = "fps: 135
+position: (35, 24, 31)
+fullpos: (35, 25, 31)
+chunk: (1, 0, 0)
+chunk_world: (0, 0, 0)"
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(0.670491, -0.181295, 0.719426, 0, 0.969685, 0.24436, -0.741917, -0.163841, 0.650165, 35, 24.5743, 31)

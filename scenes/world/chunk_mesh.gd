@@ -1,5 +1,9 @@
 extends MeshInstance3D
 
+signal mesh_build_finished(first: bool)
+
+var mesh_built_previously := false
+
 var blocks := PackedInt32Array()
 var vertex_counter := 0
 
@@ -13,7 +17,6 @@ var surface_array := []
 var chunk_position := Vector3i()
 
 var am := ArrayMesh.new()
-var th := Thread.new()
 
 
 func build_mesh(blx: PackedInt32Array) -> void:
@@ -22,14 +25,10 @@ func build_mesh(blx: PackedInt32Array) -> void:
 		mesh = null
 		return
 	
-	call_deferred("_build_mesh", blx)
+	call_deferred("_build_mesh")
 
 
-func _exit_tree() -> void:
-	th.wait_to_finish()
-
-
-func _build_mesh(blx: PackedInt32Array) -> void:
+func _build_mesh() -> void:
 	surface_array.clear()
 	verts.clear()
 	indices.clear()
@@ -38,10 +37,13 @@ func _build_mesh(blx: PackedInt32Array) -> void:
 	vertex_counter = 0
 	
 	for x in Chunk.WIDTH:
+		# """multithreading"""
+		if x % 2 == 0: await get_tree().process_frame
 		for z in Chunk.WIDTH:
 			for y in Chunk.HEIGHT:
 				var index := x + Chunk.WIDTH * z + Chunk.AREA * y
 				if blocks[index] != 0:
+					#call_deferred("_add_block_mesh", Vector3i(x, y, z))
 					_add_block_mesh(Vector3i(x, y, z))
 	surface_array.resize(Mesh.ARRAY_MAX)
 	surface_array[Mesh.ARRAY_VERTEX] = verts
@@ -52,19 +54,27 @@ func _build_mesh(blx: PackedInt32Array) -> void:
 	
 	am.clear_surfaces()
 	am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array)
+	call_deferred(
+		"emit_signal", "mesh_build_finished",
+		not mesh_built_previously)
 	mesh = am
-	mesh.surface_set_material(0, preload("res://scenes/test/testmat.tres"))
+	mesh.surface_set_material(0,
+		preload("res://scenes/test/testmat.tres"))
+	mesh_built_previously = true
 
 
 func _add_block_mesh(xyz: Vector3i) -> void:
 	var x := xyz.x
 	var y := xyz.y
 	var z := xyz.z
+	var gx := chunk_position.x * Chunk.WIDTH + x
+	var gy := chunk_position.y * Chunk.HEIGHT + y
+	var gz := chunk_position.z * Chunk.WIDTH + z
 	var vc := 0
 	
 	# bottom
 	vc = vertex_counter
-	if not _is_solid(x, y - 1, z):
+	if not _is_solid(gx, gy - 1, gz):
 		verts.append_array([
 			Vector3(0 + x, 0 + y, 0 + z), # 0
 			Vector3(1 + x, 0 + y, 0 + z), # 1
@@ -83,7 +93,7 @@ func _add_block_mesh(xyz: Vector3i) -> void:
 	
 	# top
 	vc = vertex_counter
-	if not _is_solid(x, y + 1, z):
+	if not _is_solid(gx, gy + 1, gz):
 		verts.append_array([
 			Vector3(0 + x, 1 + y, 0 + z), # 0
 			Vector3(1 + x, 1 + y, 0 + z), # 1
@@ -102,7 +112,7 @@ func _add_block_mesh(xyz: Vector3i) -> void:
 	
 	# left
 	vc = vertex_counter
-	if not _is_solid(x - 1, y, z):
+	if not _is_solid(gx - 1, gy, gz):
 		verts.append_array([
 			Vector3(0 + x, 0 + y, 0 + z), # 0
 			Vector3(0 + x, 1 + y, 0 + z), # 1
@@ -121,7 +131,7 @@ func _add_block_mesh(xyz: Vector3i) -> void:
 	
 	# right
 	vc = vertex_counter
-	if not _is_solid(x + 1, y, z):
+	if not _is_solid(gx + 1, gy, gz):
 		verts.append_array([
 			Vector3(1 + x, 0 + y, 0 + z), # 0
 			Vector3(1 + x, 0 + y, 1 + z), # 1
@@ -140,7 +150,7 @@ func _add_block_mesh(xyz: Vector3i) -> void:
 	
 	# back
 	vc = vertex_counter
-	if not _is_solid(x, y, z - 1):
+	if not _is_solid(gx, gy, gz - 1):
 		verts.append_array([
 			Vector3(0 + x, 0 + y, 0 + z), # 0
 			Vector3(1 + x, 0 + y, 0 + z), # 1
@@ -159,7 +169,7 @@ func _add_block_mesh(xyz: Vector3i) -> void:
 	
 	# front
 	vc = vertex_counter
-	if not _is_solid(x, y, z + 1):
+	if not _is_solid(gx, gy, gz + 1):
 		verts.append_array([
 			Vector3(0 + x, 0 + y, 1 + z), # 0
 			Vector3(0 + x, 1 + y, 1 + z), # 1
@@ -178,24 +188,9 @@ func _add_block_mesh(xyz: Vector3i) -> void:
 
 
 func _is_solid(x: int, y: int, z: int) -> bool:
-	if (x >= Chunk.WIDTH or x < 0) or (y >= Chunk.HEIGHT or y < 0) or (z >= Chunk.WIDTH or z < 0):
-		return _get_neighbor_chunk_block(x, y, z) > 0
-	#return blocks[x + z * Chunk.WIDTH + y * Chunk.AREA] != 0
-	return blocks[x + Chunk.WIDTH * z + Chunk.AREA * y] > 0
+	var pos := Vector3i(x, y, z)
+	var cpos := WorldBlocks.is_in_which_chunk(pos)
+	#return WorldBlocks._get_block(cpos,
+	#		WorldBlocks.to_in_chunk_position(pos, cpos)) > 0
+	return WorldBlocks.get_block(x, y, z) > 0
 
-
-func _get_neighbor_chunk_block(x: int, y: int, z: int) -> int:
-	var cx := chunk_position.x; var cy := chunk_position.y; var cz := chunk_position.z
-	if x >= Chunk.WIDTH:
-		return ChunksLoader.get_chunk(cx + 1, cy, cz).get_block(x - Chunk.WIDTH, y, z)
-	if x < 0:
-		return ChunksLoader.get_chunk(cx - 1, cy, cz).get_block(x + Chunk.WIDTH, y, z)
-	if y >= Chunk.HEIGHT:
-		return ChunksLoader.get_chunk(cx, cy + 1, cz).get_block(x, y - Chunk.HEIGHT, z)
-	if y < 0:
-		return ChunksLoader.get_chunk(cx, cy - 1, cz).get_block(x, y + Chunk.HEIGHT, z)
-	if z >= Chunk.WIDTH:
-		return ChunksLoader.get_chunk(cx, cy, cz + 1).get_block(x, y, z - Chunk.WIDTH)
-	if z < 0:
-		return ChunksLoader.get_chunk(cx, cy, cz - 1).get_block(x, y, z + Chunk.WIDTH)
-	return 0

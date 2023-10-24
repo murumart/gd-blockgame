@@ -11,7 +11,16 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	$Control/Label.text = str("position: ", $"../Camera3D".global_position)
+	var bpos := Vector3i($"../Camera3D".global_position)
+	var cpos := WorldBlocks.is_in_which_chunk(bpos)
+	var w_cpos := World._player_chunk_position()
+	$Control/Label.text = str(
+		"fps: ", Engine.get_frames_per_second(),
+		"\nposition: ", bpos,
+		"\nfullpos: ", $"../Camera3D".global_position.round(),
+		"\nchunk: ", cpos,
+		"\nchunk_world: ", w_cpos,
+		)
 
 
 func _mesh_gen():

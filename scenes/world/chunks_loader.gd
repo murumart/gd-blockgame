@@ -14,7 +14,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
-	pass
+	_add_chunk(0, 0, 0)
 
 
 func _process(_delta: float) -> void:
@@ -22,15 +22,22 @@ func _process(_delta: float) -> void:
 
 
 func _update() -> void:
+	pass
 	var p_c_pos := World.player_chunk_pos
-	if not p_c_pos in chunks.keys():
-		_add_chunk(p_c_pos.x, p_c_pos.y, p_c_pos.z)
+	_add_chunk(p_c_pos.x, p_c_pos.y, p_c_pos.z)
+	_add_chunk(p_c_pos.x, p_c_pos.y, p_c_pos.z + 1)
+	_add_chunk(p_c_pos.x, p_c_pos.y, p_c_pos.z - 1)
+	_add_chunk(p_c_pos.x + 1, p_c_pos.y, p_c_pos.z)
+	_add_chunk(p_c_pos.x - 1, p_c_pos.y, p_c_pos.z)
+	_add_chunk(p_c_pos.x, p_c_pos.y - 1, p_c_pos.z)
+	_add_chunk(p_c_pos.x, p_c_pos.y + 1, p_c_pos.z)
 
 
-func _add_chunk(x: int, y: int, z: int) -> void:
+func _add_chunk(x: int, y: int, z: int) -> Chunk:
 	var v3pos := Vector3i(x, y, z)
 	if v3pos in chunks: return
 	var chunk := CHUNK_SCENE.instantiate()
+	chunk.name = str(v3pos)
 	chunk.chunk_position = v3pos
 	chunks[v3pos] = chunk
 	add_child(chunk)
@@ -38,7 +45,9 @@ func _add_chunk(x: int, y: int, z: int) -> void:
 		x * Chunk.WIDTH, y * Chunk.HEIGHT, z * Chunk.WIDTH)
 	chunk.call_deferred("_build_mesh")
 	#chunk._build_mesh()
+	await chunk.mesh_build_finished
 	_update_neighbour_chunks(x, y, z)
+	return chunk
 
 
 func _update_neighbour_chunks(x: int, y: int, z: int) -> void:

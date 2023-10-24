@@ -3,21 +3,26 @@
 [ext_resource type="Script" path="res://scenes/world/chunk.gd" id="1_nlmke"]
 [ext_resource type="Script" path="res://scenes/world/chunk_mesh.gd" id="2_q43yy"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0anbk"]
-transparency = 1
-albedo_color = Color(0.741176, 0.517647, 1, 0.0666667)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0ra38"]
+transparency = 4
+blend_mode = 1
+albedo_color = Color(0.458824, 1, 1, 0.0588235)
 
-[sub_resource type="BoxMesh" id="BoxMesh_vcpnd"]
-material = SubResource("StandardMaterial3D_0anbk")
+[sub_resource type="BoxMesh" id="BoxMesh_yg41f"]
+material = SubResource("StandardMaterial3D_0ra38")
 size = Vector3(32, 32, 32)
 
 [node name="Chunk" type="Node3D"]
 script = ExtResource("1_nlmke")
 
 [node name="ChunkMesh" type="MeshInstance3D" parent="."]
+visibility_range_end = 160.0
 script = ExtResource("2_q43yy")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, 16)
 visible = false
-mesh = SubResource("BoxMesh_vcpnd")
+visibility_range_end = 32.0
+visibility_range_end_margin = 16.0
+visibility_range_fade_mode = 1
+mesh = SubResource("BoxMesh_yg41f")
