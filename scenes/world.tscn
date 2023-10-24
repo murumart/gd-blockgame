@@ -62,10 +62,10 @@ offset_bottom = 40.0
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
-text = "fps: 135
+text = "fps: 72
 position: (35, 24, 31)
 fullpos: (35, 25, 31)
-chunk: (1, 0, 0)
+chunk: (2, 0, 1)
 chunk_world: (0, 0, 0)"
 
 [node name="Camera3D" type="Camera3D" parent="."]

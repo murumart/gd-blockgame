@@ -2,7 +2,7 @@ class_name NullChunk extends Node3D
 
 signal mesh_build_finished
 
-const WIDTH := 32 # x
+const WIDTH := 16 # x
 const HEIGHT := 32 # y
 static var AREA := WIDTH * WIDTH
 static var VOLUME := AREA * HEIGHT

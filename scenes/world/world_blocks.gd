@@ -55,10 +55,10 @@ static func gen_blocks(chunk_position: Vector3i) -> PackedInt32Array:
 				var gz := cz * Chunk.WIDTH + z
 				if Noises.noise1.get_noise_3d(gx, gy, gz) * 3 < 1.4 and\
 					Noises.noise1.get_noise_2d(gx, gz) * (
-						Noises.noise1.get_noise_2d(gx + 800, gz + 800) * 80
+						Noises.noise1.get_noise_2d(gx + 800, gz + 800) * 160
 					) > gy and not (
-						Noises.noise1.get_noise_3d(gz + 100, gy, gx - 100) > -0.11 and
-						Noises.noise1.get_noise_3d(gz + 100, gy, gx - 100) < 0.01
+						Noises.noise1.get_noise_3d(gz + 100, gy, gx - 100) - gy * 0.5 > -0.11 and
+						Noises.noise1.get_noise_3d(gz + 100, gy, gx - 100) - gy * 0.5 < 0.01
 					):
 					_set_block(chunk_position, Vector3i(x, y, z), 1)
 	return blocks[chunk_position]

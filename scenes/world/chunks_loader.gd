@@ -5,6 +5,8 @@ const CHUNK_SCENE := preload("res://scenes/world/chunk.tscn")
 
 static var chunks := {}
 
+var chunk_render_distance := 5
+
 
 func _init() -> void:
 	if CL_INSTANCES > 0:
@@ -25,12 +27,12 @@ func _update() -> void:
 	pass
 	var p_c_pos := World.player_chunk_pos
 	_add_chunk(p_c_pos.x, p_c_pos.y, p_c_pos.z)
-	_add_chunk(p_c_pos.x, p_c_pos.y, p_c_pos.z + 1)
-	_add_chunk(p_c_pos.x, p_c_pos.y, p_c_pos.z - 1)
-	_add_chunk(p_c_pos.x + 1, p_c_pos.y, p_c_pos.z)
-	_add_chunk(p_c_pos.x - 1, p_c_pos.y, p_c_pos.z)
-	_add_chunk(p_c_pos.x, p_c_pos.y - 1, p_c_pos.z)
-	_add_chunk(p_c_pos.x, p_c_pos.y + 1, p_c_pos.z)
+	for x in range(-chunk_render_distance, chunk_render_distance):
+		for y in range(-1, 1):
+			await get_tree().process_frame
+			for z in range(-chunk_render_distance, chunk_render_distance):
+				_add_chunk(p_c_pos.x + x, p_c_pos.y + y, p_c_pos.z + z)
+				
 
 
 func _add_chunk(x: int, y: int, z: int) -> Chunk:
@@ -46,7 +48,7 @@ func _add_chunk(x: int, y: int, z: int) -> Chunk:
 	chunk.call_deferred("_build_mesh")
 	#chunk._build_mesh()
 	await chunk.mesh_build_finished
-	_update_neighbour_chunks(x, y, z)
+	#_update_neighbour_chunks(x, y, z)
 	return chunk
 
 

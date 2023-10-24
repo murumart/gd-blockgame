@@ -19,8 +19,6 @@ func _build_mesh() -> void:
 func _on_mesh_build_finished(first: bool) -> void:
 	mesh_build_finished.emit()
 	if first:
-		create_tween().tween_property(
-			mesh, "transparency", 0.0, 0.5
-			).from(1.0)
+		pass
 
 
