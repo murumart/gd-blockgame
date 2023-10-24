@@ -2,7 +2,7 @@
 extends MeshInstance3D
 
 @export var reload_mesh: bool:
-	set(to):
+	set(_to):
 		_mesh_gen()
 
 
@@ -10,7 +10,7 @@ func _ready() -> void:
 	pass
 
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	var bpos := Vector3i($"../Camera3D".global_position)
 	var cpos := WorldBlocks.is_in_which_chunk(bpos)
 	var w_cpos := World._player_chunk_position()

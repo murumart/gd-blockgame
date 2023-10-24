@@ -188,8 +188,8 @@ func _add_block_mesh(xyz: Vector3i) -> void:
 
 
 func _is_solid(x: int, y: int, z: int) -> bool:
-	var pos := Vector3i(x, y, z)
-	var cpos := WorldBlocks.is_in_which_chunk(pos)
+	#var pos := Vector3i(x, y, z)
+	#var cpos := WorldBlocks.is_in_which_chunk(pos)
 	#return WorldBlocks._get_block(cpos,
 	#		WorldBlocks.to_in_chunk_position(pos, cpos)) > 0
 	return WorldBlocks.get_block(x, y, z) > 0

@@ -52,7 +52,7 @@ func _physics_process(delta: float) -> void:
 	_direction = Vector3(input.x, (Input.get_axis("move_down", "move_up")), input.y)
 	var mspd := move_speed
 	if Input.is_action_pressed("control"):
-		mspd *= 4
+		mspd *= 8
 	translate(_direction * mspd * delta)
 	
 	World.player_position = global_position

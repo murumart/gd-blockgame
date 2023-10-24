@@ -9,16 +9,16 @@ func _init() -> void:
 		for y in  range(-pregen_size, pregen_size):
 			for z in  range(-pregen_size, pregen_size):
 				blocks[Vector3i(x, y, z)] = PackedInt32Array()
-				gen_blocks(Vector3i(x, y, z))
+				WorldBlocks.gen_blocks(Vector3i(x, y, z))
 				print("chunk %s blocks generated." % Vector3i(x, y, z))
 	# test
 	var pos := Vector3i(34, 384, 32)
-	var cpos := is_in_which_chunk(pos)
+	var cpos := WorldBlocks.is_in_which_chunk(pos)
 	print(cpos)
-	print(to_in_chunk_position(pos, cpos))
-	print(get_block(pos.x, pos.y, pos.z))
-	print(_get_block(cpos,
-			to_in_chunk_position(pos, cpos)))
+	print(WorldBlocks.to_in_chunk_position(pos, cpos))
+	print(WorldBlocks.get_block(pos.x, pos.y, pos.z))
+	print(WorldBlocks._get_block(cpos,
+			WorldBlocks.to_in_chunk_position(pos, cpos)))
 
 
 static func is_in_which_chunk(bpos: Vector3i) -> Vector3i:
@@ -44,24 +44,32 @@ static func gen_blocks(chunk_position: Vector3i) -> PackedInt32Array:
 		var nb := PackedInt32Array()
 		nb.resize(Chunk.VOLUME)
 		blocks[chunk_position] = nb
-	var cx := chunk_position.x
-	var cy := chunk_position.y
-	var cz := chunk_position.z
 	for x in Chunk.WIDTH:
 		for y in Chunk.HEIGHT:
 			for z in Chunk.WIDTH:
-				var gx := cx * Chunk.WIDTH + x
-				var gy := cy * Chunk.HEIGHT + y
-				var gz := cz * Chunk.WIDTH + z
-				if Noises.noise1.get_noise_3d(gx, gy, gz) * 3 < 1.4 and\
-					Noises.noise1.get_noise_2d(gx, gz) * (
-						Noises.noise1.get_noise_2d(gx + 800, gz + 800) * 160
-					) > gy and not (
-						Noises.noise1.get_noise_3d(gz + 100, gy, gx - 100) - gy * 0.5 > -0.11 and
-						Noises.noise1.get_noise_3d(gz + 100, gy, gx - 100) - gy * 0.5 < 0.01
-					):
-					_set_block(chunk_position, Vector3i(x, y, z), 1)
+				_world_per_block(chunk_position, Vector3i(x, y, z))
 	return blocks[chunk_position]
+
+
+static func _world_per_block(cpos: Vector3i, bpos: Vector3i) -> void:
+	var gx := cpos.x * Chunk.WIDTH + bpos.x
+	var gy := cpos.y * Chunk.HEIGHT + bpos.y
+	var gz := cpos.z * Chunk.WIDTH + bpos.z
+	var n := Noises.noise1
+	var surface_height := 0 #n.get_noise_2d(gx, gz) * 30
+	var grubbly_mult := n.get_noise_2d(gx * 0.2, gz * 0.2) + 1
+	
+	surface_height += (
+		n.get_noise_2d(
+			gx * 10 * grubbly_mult, gz * 10 * grubbly_mult) *
+			7 * (0.8 - grubbly_mult) +
+		pow(
+			n.get_noise_2d(gx * 0.02 + 391, gz * 0.02 + 358
+		) * 3, 5) * 200
+	)
+	
+	if gy <= surface_height:
+		_set_block(cpos, bpos, 1)
 
 
 static func set_block(x: int, y: int, z: int, block: int) -> void:
@@ -95,3 +103,15 @@ static func get_chunk_blocks(cpos: Vector3i) -> PackedInt32Array:
 	if not blocks.get(cpos, null):
 		gen_blocks(cpos)
 	return blocks.get(cpos)
+
+# old worldgen
+#if Noises.noise1.get_noise_3d(gx, gy, gz) * 3 < 1.4 and\
+#	Noises.noise1.get_noise_2d(gx, gz) * (
+#		Noises.noise1.get_noise_2d(gx + 800, gz + 800) * 160 /
+#		(Noises.noise1.get_noise_2d(gz - 66, gx + 43) + 1.01)
+#	) > gy \
+#	and not (
+#		Noises.noise1.get_noise_3d(gz + 100, gy, gx - 100) - gy * 0.5 > -0.11 and
+#		Noises.noise1.get_noise_3d(gz + 100, gy, gx - 100) - gy * 0.5 < 0.01
+#	):
+#	_set_block(chunk_position, Vector3i(x, y, z), 1)
