@@ -1,9 +1,10 @@
-[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://btqk6iql7oemc"]
+[gd_resource type="StandardMaterial3D" load_steps=3 format=3 uid="uid://btqk6iql7oemc"]
 
+[ext_resource type="Texture2D" uid="uid://b5wei185mlwd5" path="res://assets/textures/blocks/regien.jpg" id="1_88cx2"]
 [ext_resource type="Texture2D" uid="uid://iypaghe2pllx" path="res://icon.svg" id="1_m0xjy"]
 
 [resource]
-albedo_texture = ExtResource("1_m0xjy")
+albedo_texture = ExtResource("1_88cx2")
 metallic_specular = 0.0
 ao_light_affect = 0.46
 subsurf_scatter_strength = 0.54

@@ -1,7 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://ld17r603mj3c"]
+[gd_scene load_steps=5 format=3 uid="uid://cmkphetoqwe7"]
 
-[ext_resource type="Script" path="res://scenes/world/chunk.gd" id="1_nlmke"]
-[ext_resource type="Script" path="res://scenes/world/chunk_mesh.gd" id="2_q43yy"]
+[ext_resource type="Script" path="res://scenes/world/Chunk.cs" id="1_6d00t"]
+[ext_resource type="Script" path="res://scenes/world/ChunkMesh.cs" id="2_oafpw"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0ra38"]
 transparency = 4
@@ -13,10 +13,10 @@ material = SubResource("StandardMaterial3D_0ra38")
 size = Vector3(32, 32, 32)
 
 [node name="Chunk" type="Node3D"]
-script = ExtResource("1_nlmke")
+script = ExtResource("1_6d00t")
 
 [node name="ChunkMesh" type="MeshInstance3D" parent="."]
-script = ExtResource("2_q43yy")
+script = ExtResource("2_oafpw")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, 16)

@@ -17,7 +17,7 @@ var _direction := Vector3()
 
 
 func _ready() -> void:
-	pass
+	_ready_signal()
 
 
 func _ready_signal() -> void:
