@@ -1,9 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://dh4pwgtu6u1q0"]
+[gd_scene load_steps=7 format=3 uid="uid://dh4pwgtu6u1q0"]
 
-[ext_resource type="Script" path="res://scenes/world.gd" id="1_vuntx"]
-[ext_resource type="Script" path="res://scenes/camera/camera_controller.gd" id="2_m1nwf"]
-[ext_resource type="Script" path="res://scenes/test/meshtest.cs" id="3_r7wm2"]
-[ext_resource type="PackedScene" uid="uid://cmkphetoqwe7" path="res://scenes/world/chunk.tscn" id="4_tcwu1"]
+[ext_resource type="Script" path="res://scenes/world/world.gd" id="1_5dp8i"]
+[ext_resource type="Script" path="res://scenes/test/meshtest.cs" id="2_yyo7f"]
+[ext_resource type="Script" path="res://scenes/camera/camera_controller.gd" id="3_ax5yo"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_xs8g4"]
 sky_top_color = Color(0.384314, 0.454902, 0.54902, 1)
@@ -20,7 +19,7 @@ tonemap_mode = 2
 glow_enabled = true
 
 [node name="World" type="Node3D"]
-script = ExtResource("1_vuntx")
+script = ExtResource("1_5dp8i")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_u5qh4")
@@ -30,15 +29,20 @@ transform = Transform3D(-0.846193, -0.532876, -2.32928e-08, -0.266438, 0.423097,
 shadow_enabled = true
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-script = ExtResource("3_r7wm2")
+script = ExtResource("2_yyo7f")
 
-[node name="Control" type="Control" parent="MeshInstance3D"]
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-0.839667, 0.132712, -0.526637, 2.10465e-08, 0.969685, 0.24436, 0.543101, 0.205181, -0.814212, 2.35057, 1.75849, -8.73379)
+current = true
+script = ExtResource("3_ax5yo")
+
+[node name="Control" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="Label" type="Label" parent="MeshInstance3D/Control"]
+[node name="Label" type="Label" parent="Control"]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
@@ -47,10 +51,3 @@ position: (35, 24, 31)
 fullpos: (35, 25, 31)
 chunk: (2, 0, 1)
 chunk_world: (0, 0, 0)"
-
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-0.839667, 0.132712, -0.526637, 2.10465e-08, 0.969685, 0.24436, 0.543101, 0.205181, -0.814212, 2.35057, 1.75849, -8.73379)
-current = true
-script = ExtResource("2_m1nwf")
-
-[node name="Chunk" parent="." instance=ExtResource("4_tcwu1")]

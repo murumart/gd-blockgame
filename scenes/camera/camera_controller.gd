@@ -17,7 +17,7 @@ var _direction := Vector3()
 
 
 func _ready() -> void:
-	_ready_signal()
+	pass
 
 
 func _ready_signal() -> void:
@@ -55,4 +55,4 @@ func _physics_process(delta: float) -> void:
 		mspd *= 8
 	translate(_direction * mspd * delta)
 	
-	World.player_position = global_position
+	WorldI.player_position = global_position
