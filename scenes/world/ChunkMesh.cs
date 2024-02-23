@@ -12,17 +12,26 @@ public partial class ChunkMesh : MeshInstance3D {
 	List<Vector3> normals = new List<Vector3>();
 	List<int> indices = new List<int>();
 
+	World world; 
+
 	ArrayMesh am = new();
 
 	public Vector3I chunkPosition;
 
 
+	public override void _Ready()
+	{
+		base._Ready();
+		world = GetNode<World>("/root/World");
+	}
+
+
 	public void BuildMesh(ref short[] blocks) {
 		ResetMesh();
-		for (short x = 0; x < Chunk.WIDTH; x++) {
-		for (short y = 0; y < Chunk.WIDTH; y++) {
-		for (short z = 0; z < Chunk.WIDTH; z++) {
-			int index = x + z * Chunk.WIDTH + y * Chunk.AREA;
+		for (short x = 0; x < World.CHUNK_SIZE; x++) {
+		for (short y = 0; y < World.CHUNK_SIZE; y++) {
+		for (short z = 0; z < World.CHUNK_SIZE; z++) {
+			int index = x + z * World.CHUNK_SIZE + y * Chunk.AREA;
 			if (blocks[index] > 0) {
 				AddBlockMesh(x, y, z);
 			}
@@ -34,6 +43,7 @@ public partial class ChunkMesh : MeshInstance3D {
 		surfaceArray[(int)Mesh.ArrayType.Normal] = normals.ToArray();
 		surfaceArray[(int)Mesh.ArrayType.Index] = indices.ToArray();
 
+		if (verts.Count < 1) return;
 		am.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, surfaceArray);
 
 		Mesh = am;
@@ -42,9 +52,9 @@ public partial class ChunkMesh : MeshInstance3D {
 
 
 	private void AddBlockMesh(int x, int y, int z) {
-		int gx = chunkPosition.X * Chunk.WIDTH + x;
-		int gy = chunkPosition.Y * Chunk.HEIGHT + y;
-		int gz = chunkPosition.Z * Chunk.WIDTH + z;
+		int gx = chunkPosition.X * World.CHUNK_SIZE + x;
+		int gy = chunkPosition.Y * World.CHUNK_SIZE + y;
+		int gz = chunkPosition.Z * World.CHUNK_SIZE + z;
 
 		// bottom
 		int vc = vertexCounter;
@@ -163,7 +173,7 @@ public partial class ChunkMesh : MeshInstance3D {
 		}
 		// front
 		vc = vertexCounter;
-		if (!IsSolid(x, y, z - 1)) {
+		if (!IsSolid(x, y, z + 1)) {
 			verts.AddRange(new Vector3[] {
 				new(0 + x, 0 + y, 1 + z),
 				new(0 + x, 1 + y, 1 + z),
@@ -199,7 +209,15 @@ public partial class ChunkMesh : MeshInstance3D {
 
 
 	private bool IsSolid(int x, int y, int z) {
+<<<<<<< HEAD
 
 		return false;
+=======
+		x += World.CHUNK_SIZE * chunkPosition.X;
+		y += World.CHUNK_SIZE * chunkPosition.Y;
+		z += World.CHUNK_SIZE * chunkPosition.Z;
+		
+		return world.GetBlock(x, y, z) > 0;
+>>>>>>> fcda282d69b4e5032dce01dd29b57ae306c10700
 	}
 }

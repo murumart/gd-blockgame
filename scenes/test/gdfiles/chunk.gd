@@ -1,4 +1,4 @@
-class_name Chunk extends NullChunk
+extends NullChunk
 
 
 func _ready() -> void:

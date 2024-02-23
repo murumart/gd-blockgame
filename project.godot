@@ -14,9 +14,13 @@ config/name="minecraft real"
 config/features=PackedStringArray("4.1", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+World="*res://scenes/world/World.cs"
+
 [dotnet]
 
-project/assembly_name="minecraft real"
+project/assembly_name="blockgame"
 
 [input]
 
