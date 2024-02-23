@@ -32,7 +32,7 @@ func _update() -> void:
 			await get_tree().process_frame
 			for z in range(-chunk_render_distance, chunk_render_distance):
 				_add_chunk(p_c_pos.x + x, p_c_pos.y + y, p_c_pos.z + z)
-				
+
 
 
 func _add_chunk(x: int, y: int, z: int) -> Chunk:

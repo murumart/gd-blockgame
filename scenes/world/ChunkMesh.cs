@@ -26,7 +26,7 @@ public partial class ChunkMesh : MeshInstance3D {
 			if (blocks[index] > 0) {
 				AddBlockMesh(x, y, z);
 			}
-		}}} 
+		}}}
 		am.ClearSurfaces();
 		surfaceArray.Resize((int)Mesh.ArrayType.Max);
 		surfaceArray[(int)Mesh.ArrayType.Vertex] = verts.ToArray();
@@ -75,7 +75,7 @@ public partial class ChunkMesh : MeshInstance3D {
 			verts.AddRange(new Vector3[] {
 				new(0 + x, 1 + y, 0 + z),
 				new(1 + x, 1 + y, 0 + z),
-				new(1 + x, 1 + y, 1 + z), 
+				new(1 + x, 1 + y, 1 + z),
 				new(0 + x, 1 + y, 1 + z)
 			});
 			indices.AddRange(new int[] {
@@ -199,7 +199,7 @@ public partial class ChunkMesh : MeshInstance3D {
 
 
 	private bool IsSolid(int x, int y, int z) {
-		
+
 		return false;
 	}
 }

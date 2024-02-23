@@ -25,15 +25,15 @@ func _physics_process(_delta: float) -> void:
 
 func _mesh_gen():
 	var am := ArrayMesh.new()
-	
+
 	var surface_array := []
 	surface_array.resize(Mesh.ARRAY_MAX)
-	
+
 	var verts := PackedVector3Array()
 	var uvs := PackedVector2Array()
 	var normals := PackedVector3Array()
 	var indices := PackedInt32Array()
-	
+
 	verts.append_array([
 		# bottom
 		Vector3(0, 0, 0), # 0
@@ -66,7 +66,7 @@ func _mesh_gen():
 		Vector3(1, 1, 1), # 22
 		Vector3(1, 0, 1), # 23
 	])
-	
+
 	indices.append_array([
 		# bottom
 		0, 3, 2, 2, 1, 0,
@@ -81,7 +81,7 @@ func _mesh_gen():
 		# front
 		20, 21, 22, 22, 23, 20
 	])
-	
+
 	uvs.append_array([
 		# bottom
 		Vector2(0, 1),
@@ -114,7 +114,7 @@ func _mesh_gen():
 		Vector2(1, 0),
 		Vector2(1, 1)
 	])
-	
+
 	normals.append_array([
 		# bottom
 		Vector3(0, -1, 0),
@@ -147,12 +147,12 @@ func _mesh_gen():
 		Vector3(0, 0, 1),
 		Vector3(0, 0, 1),
 	])
-	
+
 	surface_array[Mesh.ARRAY_VERTEX] = verts
 	surface_array[Mesh.ARRAY_INDEX] = indices
 	surface_array[Mesh.ARRAY_TEX_UV] = uvs
 	surface_array[Mesh.ARRAY_NORMAL] = normals
-	
+
 	am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array)
 	self.mesh = am
 	self.mesh.set("surface_0/material", preload("res://scenes/test/testmat.tres"))

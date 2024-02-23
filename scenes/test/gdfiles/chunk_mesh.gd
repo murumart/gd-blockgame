@@ -24,7 +24,7 @@ func build_mesh(blx: PackedInt32Array) -> void:
 	if blocks.size() < 1:
 		mesh = null
 		return
-	
+
 	call_deferred("_build_mesh")
 
 
@@ -35,7 +35,7 @@ func _build_mesh() -> void:
 	uvs.clear()
 	normals.clear()
 	vertex_counter = 0
-	
+
 	for x in Chunk.WIDTH:
 		# """multithreading"""
 		if x % 2 == 0: await get_tree().process_frame
@@ -51,7 +51,7 @@ func _build_mesh() -> void:
 	surface_array[Mesh.ARRAY_TEX_UV] = uvs
 	surface_array[Mesh.ARRAY_NORMAL] = normals
 	if verts.size() < 1: return
-	
+
 	am.clear_surfaces()
 	am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array)
 	call_deferred(
@@ -71,7 +71,7 @@ func _add_block_mesh(xyz: Vector3i) -> void:
 	var gy := chunk_position.y * Chunk.HEIGHT + y
 	var gz := chunk_position.z * Chunk.WIDTH + z
 	var vc := 0
-	
+
 	# bottom
 	vc = vertex_counter
 	if not _is_solid(gx, gy - 1, gz):
@@ -90,14 +90,14 @@ func _add_block_mesh(xyz: Vector3i) -> void:
 			Vector3(0, -1, 0),
 			Vector3(0, -1, 0),
 		])
-	
+
 	# top
 	vc = vertex_counter
 	if not _is_solid(gx, gy + 1, gz):
 		verts.append_array([
 			Vector3(0 + x, 1 + y, 0 + z), # 0
 			Vector3(1 + x, 1 + y, 0 + z), # 1
-			Vector3(1 + x, 1 + y, 1 + z), # 2 
+			Vector3(1 + x, 1 + y, 1 + z), # 2
 			Vector3(0 + x, 1 + y, 1 + z), # 3
 		])
 		indices.append_array([0 + vc, 1 + vc, 2 + vc, 2 + vc, 3 + vc, 0 + vc])
@@ -109,7 +109,7 @@ func _add_block_mesh(xyz: Vector3i) -> void:
 			Vector3(0, 1, 0),
 			Vector3(0, 1, 0),
 		])
-	
+
 	# left
 	vc = vertex_counter
 	if not _is_solid(gx - 1, gy, gz):
@@ -128,7 +128,7 @@ func _add_block_mesh(xyz: Vector3i) -> void:
 			Vector3(-1, 0, 0),
 			Vector3(-1, 0, 0),
 		])
-	
+
 	# right
 	vc = vertex_counter
 	if not _is_solid(gx + 1, gy, gz):
@@ -147,7 +147,7 @@ func _add_block_mesh(xyz: Vector3i) -> void:
 			Vector3(1, 0, 0),
 			Vector3(1, 0, 0),
 		])
-	
+
 	# back
 	vc = vertex_counter
 	if not _is_solid(gx, gy, gz - 1):
@@ -166,7 +166,7 @@ func _add_block_mesh(xyz: Vector3i) -> void:
 			Vector3(0, 0, -1),
 			Vector3(0, 0, -1),
 		])
-	
+
 	# front
 	vc = vertex_counter
 	if not _is_solid(gx, gy, gz + 1):

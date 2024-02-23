@@ -27,7 +27,7 @@ public partial class Chunk : Node3D {
 			if (y < 7) {
 				blocks[index] = 1;
 			}
-		}}} 
+		}}}
 
 		mesh.BuildMesh(ref blocks);
 	}

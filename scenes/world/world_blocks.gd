@@ -58,7 +58,7 @@ static func _world_per_block(cpos: Vector3i, bpos: Vector3i) -> void:
 	var n := Noises.noise1
 	var surface_height := 0 #n.get_noise_2d(gx, gz) * 30
 	var grubbly_mult := n.get_noise_2d(gx * 0.2, gz * 0.2) + 1
-	
+
 	surface_height += (
 		n.get_noise_2d(
 			gx * 10 * grubbly_mult, gz * 10 * grubbly_mult) *
@@ -67,7 +67,7 @@ static func _world_per_block(cpos: Vector3i, bpos: Vector3i) -> void:
 			n.get_noise_2d(gx * 0.02 + 391, gz * 0.02 + 358
 		) * 3, 5) * 200
 	)
-	
+
 	if gy <= surface_height:
 		_set_block(cpos, bpos, 1)
 
