@@ -1,4 +1,22 @@
 class_name ChunkData extends Resource
 
+const BLOCKS_IN_CHUNK := Chunk.SIZE.x * Chunk.SIZE.y * Chunk.SIZE.z
+const BYTES_PER_BLOCK := 2
+
 
 var block_data := PackedByteArray()
+
+
+func _init() -> void:
+	block_data.resize(BLOCKS_IN_CHUNK * BYTES_PER_BLOCK)
+
+
+func set_block_at(idx: int, data: int) -> void:
+	assert(data < 0xFFFF, "block overflow")
+	idx *= BYTES_PER_BLOCK
+	block_data[idx] = data
+
+
+func get_block_at(idx: int) -> int:
+	idx *= BYTES_PER_BLOCK
+	return block_data[idx]

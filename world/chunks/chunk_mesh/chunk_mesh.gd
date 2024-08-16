@@ -34,7 +34,11 @@ func _create_mesh(chunk_data: ChunkData) -> void:
 		for x in chunk_size.x:
 			for z in chunk_size.z:
 				var bpos := Vector3(x, y, z)
-				
+				var idx := Chunk.pos_to_index(bpos)
+				var block := chunk_data.get_block_at(idx)
+				if block == 0:
+					continue
+				_add_block_mesh(bpos, mesh_array, vertex_count)
 	
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_array)
 	
