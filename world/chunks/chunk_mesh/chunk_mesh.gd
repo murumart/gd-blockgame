@@ -1,5 +1,4 @@
-@tool
-extends MeshInstance3D
+class_name ChunkMesh extends MeshInstance3D
 
 const VERTS_PER_FACE := 4
 
@@ -8,16 +7,15 @@ const INDEX_APPENDAGE: PackedByteArray = [0, 1, 2, 2, 3, 0]
 var chunk_size := Vector3i(16, 16, 16) # DEBUG
 
 
-@export var _debug_regenerate: bool:
-	set(to):
-		_debug_regen()
-
-
 func _debug_regen() -> void:
-	_create_mesh()
+	_create_mesh(null)
 
 
-func _create_mesh() -> void:
+func create_mesh(chunk_data: ChunkData) -> void:
+	_create_mesh(chunk_data)
+
+
+func _create_mesh(chunk_data: ChunkData) -> void:
 	var time := Time.get_ticks_msec()
 	
 	# store how many vertices have been appended in total
@@ -36,7 +34,7 @@ func _create_mesh() -> void:
 		for x in chunk_size.x:
 			for z in chunk_size.z:
 				var bpos := Vector3(x, y, z)
-				_add_block_mesh(bpos, mesh_array, vertex_count)
+				
 	
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_array)
 	
@@ -101,22 +99,8 @@ func _add_face_data(
 	var normals: PackedVector3Array = mesh_array[Mesh.ARRAY_NORMAL]
 	var indices: PackedInt32Array = mesh_array[Mesh.ARRAY_INDEX]
 	var cvs := vertex_count[0]
-	var cix := indices.size() - 1
-	indices.resize(indices.size() + 6)
-	indices[cix + 0] = 0 + cvs
-	indices[cix + 1] = 1 + cvs
-	indices[cix + 2] = 2 + cvs
-	indices[cix + 3] = 2 + cvs
-	indices[cix + 4] = 3 + cvs
-	indices[cix + 5] = 0 + cvs
-	#indices.append(0 + cvs)
-	#indices.append(1 + cvs)
-	#indices.append(2 + cvs)
-	#indices.append(2 + cvs)
-	#indices.append(3 + cvs)
-	#indices.append(0 + cvs)
-	#for ix in INDEX_APPENDAGE:
-		#indices.append(ix + cvs)
+	for ix in INDEX_APPENDAGE:
+		indices.append(ix + cvs)
 	normals.append(normal_direction)
 	normals.append(normal_direction)
 	normals.append(normal_direction)
