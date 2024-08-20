@@ -20,3 +20,10 @@ func set_block_at(idx: int, data: int) -> void:
 func get_block_at(idx: int) -> int:
 	idx *= BYTES_PER_BLOCK
 	return block_data[idx]
+
+
+static func pos_to_index(pos: Vector3) -> int:
+	return int(
+			pos.y
+			+ pos.z * Chunk.SIZE.y
+			+ pos.x * Chunk.SIZE.z * Chunk.SIZE.y)

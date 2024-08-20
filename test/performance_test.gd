@@ -11,10 +11,10 @@ func _ready() -> void:
 
 
 func _perf_test() -> void:
-	pass
-	
+	_static_or_copy()
 
-## 1000*16*16*16 loops, no consts: 17336, with consts: 17370. 
+
+## 1000*16*16*16 loops, no consts: 17336, with consts: 17370.
 ## this means that there's no difference whether you use constant vecs or not,
 ## probably because in the end you still have to use +, which creates new vectors.
 func _vector3_speed_test() -> void:
@@ -25,7 +25,7 @@ func _vector3_speed_test() -> void:
 	var time_1 := 0
 	var time_2 := 0
 	var time := 0
-	
+
 	time = Time.get_ticks_msec()
 	for _l in LOOPS:
 		for n in BOX_SIZE:
@@ -65,7 +65,7 @@ func _appending_vs_array_vs_positions() -> void:
 	var time_2 := 0
 	var time_3 := 0
 	var time := 0
-	
+
 	time = Time.get_ticks_msec()
 	for _l in LOOPS:
 		for n in BOX_SIZE:
@@ -88,7 +88,7 @@ func _appending_vs_array_vs_positions() -> void:
 					Vector3(1, 1, 1) + vec,
 				])
 	time_2 = Time.get_ticks_msec() - time
-	
+
 	const BIG_NR := BOX_SIZE * BOX_SIZE * BOX_SIZE
 	arr3.resize(BIG_NR * 4)
 	time = Time.get_ticks_msec()
@@ -102,7 +102,7 @@ func _appending_vs_array_vs_positions() -> void:
 				arr3[pos + 2] = Vector3(1, 1, 0) + vec
 				arr3[pos + 3] = Vector3(1, 1, 1) + vec
 	time_3 = Time.get_ticks_msec() - time
-	
+
 	print("app one at a time: ", time_1, "; append_array: ", time_2,
 			"; presized array: ", time_3)
 
@@ -117,7 +117,7 @@ func _new_vec3s_or_packedarray_speed_test() -> void:
 	var time_1 := 0
 	var time_2 := 0
 	var time := 0
-	
+
 	time = Time.get_ticks_msec()
 	for _l in LOOPS:
 		for n in BOX_SIZE:
@@ -147,3 +147,36 @@ func _other_method_vec3(pos: Vector3) -> void:
 func _other_method_packedarray(pos: PackedInt32Array) -> void:
 	var blaab := pos[0] + pos[1] * pos[1] + pos[1] + pos[2] + pos[2] * pos[0] * pos[1]
 	blaab *= 1212
+
+
+func _static_or_copy() -> void:
+	const LOOPS := 100
+	var arr1 := PackedInt32Array()
+	var arr2 := PackedInt32Array()
+	const BOX_SIZE := 16
+	var time_1 := 0
+	var time_2 := 0
+	var time := 0
+
+	time = Time.get_ticks_msec()
+	for _l in LOOPS:
+		for n in BOX_SIZE:
+			for y in BOX_SIZE: for x in BOX_SIZE: for z in BOX_SIZE:
+				var vec := Vector3(x, y, z)
+				arr1.append(ChunkData.pos_to_index(vec))
+	time_1 = Time.get_ticks_msec() - time
+	time = Time.get_ticks_msec()
+	for _l in LOOPS:
+		for n in BOX_SIZE:
+			for y in BOX_SIZE: for x in BOX_SIZE: for z in BOX_SIZE:
+				var vec := Vector3(x, y, z)
+				arr2.append(pos_to_index(vec))
+	time_2 = Time.get_ticks_msec() - time
+	print("static: ", time_1, "; local: ", time_2)
+
+
+func pos_to_index(pos: Vector3) -> int:
+	return int(
+			pos.y
+			+ pos.z * Chunk.SIZE.y
+			+ pos.x * Chunk.SIZE.z * Chunk.SIZE.y)
