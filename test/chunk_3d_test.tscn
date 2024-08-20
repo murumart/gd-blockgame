@@ -1,0 +1,33 @@
+[gd_scene load_steps=3 format=3 uid="uid://klx8164wmk5q"]
+
+[ext_resource type="PackedScene" uid="uid://c8jaw8ffiq352" path="res://world/chunks/chunk.tscn" id="1_kn7ty"]
+
+[sub_resource type="GDScript" id="GDScript_tfr6n"]
+resource_name = "3dtest"
+script/source = "extends Node3D
+
+
+
+func _ready() -> void:
+	for chunk: Chunk in $Chunks.get_children():
+		chunk._debug_generate = true
+"
+
+[node name="Chunk3dTest" type="Node3D"]
+script = SubResource("GDScript_tfr6n")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.94608, -0.169255, 0.276199, 0, 0.85264, 0.522499, -0.323934, -0.494325, 0.806666, 28.9502, 9.853, 28.0943)
+
+[node name="Chunks" type="Node3D" parent="."]
+
+[node name="Chunk" parent="Chunks" instance=ExtResource("1_kn7ty")]
+
+[node name="Chunk2" parent="Chunks" instance=ExtResource("1_kn7ty")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 0)
+
+[node name="Chunk3" parent="Chunks" instance=ExtResource("1_kn7ty")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 16)
+
+[node name="Chunk4" parent="Chunks" instance=ExtResource("1_kn7ty")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 16)

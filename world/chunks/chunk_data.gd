@@ -3,12 +3,14 @@ class_name ChunkData extends Resource
 const BLOCKS_IN_CHUNK := Chunk.SIZE.x * Chunk.SIZE.y * Chunk.SIZE.z
 const BYTES_PER_BLOCK := 2
 
+const BLOCK_DATA_SIZE := BLOCKS_IN_CHUNK * BYTES_PER_BLOCK
+
 
 var block_data := PackedByteArray()
 
 
 func _init() -> void:
-	block_data.resize(BLOCKS_IN_CHUNK * BYTES_PER_BLOCK)
+	block_data.resize(BLOCK_DATA_SIZE)
 
 
 func set_block_at(idx: int, data: int) -> void:

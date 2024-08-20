@@ -45,8 +45,9 @@ func _create_mesh(chunk_data: ChunkData) -> void:
 
 
 func _is_side_visible(data: ChunkData, block_position: Vector3, side: Vector3) -> bool:
-	return true
 	var block_index := ChunkData.pos_to_index(block_position + side)
+	if block_index < 0 or block_index >= ChunkData.BLOCKS_IN_CHUNK:
+		return false
 	if data.get_block_at(block_index) != 0:
 		return false
 	return true
