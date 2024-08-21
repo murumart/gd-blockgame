@@ -28,12 +28,22 @@ func init_block_data() -> void:
 func set_block_at(idx: int, data: int) -> void:
 	assert(data < 0xFFFF, "block overflow")
 	idx *= BYTES_PER_BLOCK
+	if block_data.size() == BYTES_PER_BLOCK and data != get_block_at(0):
+		init_block_data()
 	block_data[idx] = data
 
 
 func get_block_at(idx: int) -> int:
+	if block_data.size() == BYTES_PER_BLOCK:
+		return block_data.decode_u16(0)
 	idx *= BYTES_PER_BLOCK
-	return block_data[idx]
+	return block_data.decode_u16(idx)
+
+
+func set_single_block_type(data: int) -> void:
+	clear_block_data()
+	block_data.resize(BYTES_PER_BLOCK)
+	block_data.encode_u16(0, data)
 
 
 func get_block_type_from_pos(pos: Vector3) -> BlockType:

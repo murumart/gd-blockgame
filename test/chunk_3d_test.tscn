@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://klx8164wmk5q"]
+[gd_scene load_steps=8 format=3 uid="uid://klx8164wmk5q"]
 
 [ext_resource type="Script" path="res://addons/simple_free_look_camera/camera.gd" id="1_8mts2"]
-[ext_resource type="PackedScene" uid="uid://c8jaw8ffiq352" path="res://world/chunks/chunk.tscn" id="1_kn7ty"]
+[ext_resource type="Script" path="res://world/chunks/chunk_loader.gd" id="2_0dstt"]
+[ext_resource type="PackedScene" uid="uid://xv0bwgrtwil2" path="res://world/world.tscn" id="2_3n2ij"]
 
 [sub_resource type="GDScript" id="GDScript_tfr6n"]
 resource_name = "3dtest"
@@ -10,13 +11,27 @@ script/source = "extends Node3D
 
 
 func _ready() -> void:
-	for chunk: Chunk in $Chunks.get_children():
-		chunk._generate()
-		chunk.make_mesh()
+	pass
 "
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_hhte1"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_mg2k5"]
+sky_material = SubResource("ProceduralSkyMaterial_hhte1")
+
+[sub_resource type="Environment" id="Environment_sejph"]
+background_mode = 2
+sky = SubResource("Sky_mg2k5")
+tonemap_mode = 2
+glow_enabled = true
 
 [node name="Chunk3dTest" type="Node3D"]
 script = SubResource("GDScript_tfr6n")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_sejph")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
@@ -28,16 +43,11 @@ script = ExtResource("1_8mts2")
 
 [node name="OmniLight3D" type="OmniLight3D" parent="Camera3D"]
 shadow_enabled = true
+omni_range = 12.0
 
-[node name="Chunks" type="Node3D" parent="."]
+[node name="ChunkLoader" type="Node3D" parent="Camera3D"]
+script = ExtResource("2_0dstt")
+load_distance = 5
 
-[node name="Chunk" parent="Chunks" instance=ExtResource("1_kn7ty")]
-
-[node name="Chunk2" parent="Chunks" instance=ExtResource("1_kn7ty")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 0)
-
-[node name="Chunk3" parent="Chunks" instance=ExtResource("1_kn7ty")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 16)
-
-[node name="Chunk4" parent="Chunks" instance=ExtResource("1_kn7ty")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 16)
+[node name="World" parent="." node_paths=PackedStringArray("chunk_loaders") instance=ExtResource("2_3n2ij")]
+chunk_loaders = [NodePath("../Camera3D/ChunkLoader")]

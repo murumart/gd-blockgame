@@ -2,6 +2,8 @@ class_name BlockTypes
 
 ## Stores block types.
 
+const INVALID_BLOCK_ID := -1
+
 const _array: Array[BlockType] = [
 	preload("res://world/blocks/default_blocks/empty.tres"),
 	preload("res://world/blocks/default_blocks/stone.tres"),

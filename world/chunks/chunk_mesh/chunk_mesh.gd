@@ -19,11 +19,7 @@ const NORMAL_TO_DIRECTION := {
 }
 
 
-func create_mesh(chunk_data: ChunkData) -> void:
-	_create_mesh(chunk_data)
-
-
-func _create_mesh(chunk_data: ChunkData) -> void:
+func create_mesh(chunk_data: ChunkData, world: World) -> void:
 	var time := Time.get_ticks_msec()
 
 	# store how many vertices have been appended in total
@@ -31,6 +27,10 @@ func _create_mesh(chunk_data: ChunkData) -> void:
 	vertex_count.append(0)
 
 	mesh = ArrayMesh.new()
+
+	if chunk_data.block_data.size() == ChunkData.BYTES_PER_BLOCK:
+		return
+
 	var mesh_array := Array()
 	mesh_array.resize(Mesh.ARRAY_MAX)
 
@@ -43,26 +43,34 @@ func _create_mesh(chunk_data: ChunkData) -> void:
 		for x in Chunk.SIZE.x:
 			for z in Chunk.SIZE.z:
 				var bpos := Vector3(x, y, z)
-				var idx := ChunkData.pos_to_index(bpos)
-				var block := chunk_data.get_block_at(idx)
-				_add_block_mesh(bpos, mesh_array, vertex_count, chunk_data)
+				_add_block_mesh(bpos, mesh_array, vertex_count, chunk_data, world)
 
+	if mesh_array[Mesh.ARRAY_VERTEX].is_empty():
+		return
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_array)
 	mesh.surface_set_material(0, BLOCK_MATERIAL)
 
 	print("meshgen took ", Time.get_ticks_msec() - time)
 
 
-func _is_side_visible(data: ChunkData, block_position: Vector3, side: Vector3) -> bool:
+func _is_side_visible(
+		data: ChunkData,
+		block_position: Vector3,
+		side: Vector3,
+		world: World) -> bool:
 	var check_position := block_position + side
+	var check_block_id: int
+	var check_block_type: BlockType
 	if (check_position.x >= Chunk.SIZE.x or check_position.x < 0
 			or check_position.y >= Chunk.SIZE.y or check_position.y < 0
 			or check_position.z >= Chunk.SIZE.z or check_position.z < 0):
-		return true
-	var block_index := ChunkData.pos_to_index(check_position)
-	var block_id := data.get_block_at(block_index)
-	var block_type := BlockTypes.get_block(block_id)
-	if block_type.mesh_type != BlockType.MeshType.NONE:
+		check_block_id = world.get_block(check_position + global_position)
+		if check_block_id == BlockTypes.INVALID_BLOCK_ID:
+			return true
+		check_block_type = BlockTypes.get_block(check_block_id)
+	else:
+		check_block_type = data.get_block_type_from_pos(check_position)
+	if check_block_type.mesh_type != BlockType.MeshType.NONE:
 		return false
 	return true
 
@@ -70,14 +78,15 @@ func _is_side_visible(data: ChunkData, block_position: Vector3, side: Vector3) -
 func _add_block_mesh(block_position: Vector3,
 		mesh_array: Array,
 		vertex_count: PackedInt32Array,
-		chunk_data: ChunkData) -> void:
+		chunk_data: ChunkData,
+		world: World) -> void:
 	var verts: PackedVector3Array = mesh_array[Mesh.ARRAY_VERTEX]
 	var block_type := chunk_data.get_block_type_from_pos(block_position)
 	if block_type.mesh_type == BlockType.MeshType.NONE:
 		return
 
 	# NORTH (-Z)
-	if _is_side_visible(chunk_data, block_position, Vector3.FORWARD):
+	if _is_side_visible(chunk_data, block_position, Vector3.FORWARD, world):
 		verts.append(Vector3(0, 0, 0) + block_position)
 		verts.append(Vector3(1, 0, 0) + block_position)
 		verts.append(Vector3(1, 1, 0) + block_position)
@@ -85,7 +94,7 @@ func _add_block_mesh(block_position: Vector3,
 		_add_face_data(Vector3.FORWARD, vertex_count, mesh_array, block_type)
 
 	# SOUTH (+Z)
-	if _is_side_visible(chunk_data, block_position, Vector3.BACK):
+	if _is_side_visible(chunk_data, block_position, Vector3.BACK, world):
 		verts.append(Vector3(1, 0, 1) + block_position)
 		verts.append(Vector3(0, 0, 1) + block_position)
 		verts.append(Vector3(0, 1, 1) + block_position)
@@ -93,7 +102,7 @@ func _add_block_mesh(block_position: Vector3,
 		_add_face_data(Vector3.BACK, vertex_count, mesh_array, block_type)
 
 	# WEST (-X)
-	if _is_side_visible(chunk_data, block_position, Vector3.LEFT):
+	if _is_side_visible(chunk_data, block_position, Vector3.LEFT, world):
 		verts.append(Vector3(0, 0, 1) + block_position)
 		verts.append(Vector3(0, 0, 0) + block_position)
 		verts.append(Vector3(0, 1, 0) + block_position)
@@ -101,7 +110,7 @@ func _add_block_mesh(block_position: Vector3,
 		_add_face_data(Vector3.LEFT, vertex_count, mesh_array, block_type)
 
 	# EAST (+X)
-	if _is_side_visible(chunk_data, block_position, Vector3.RIGHT):
+	if _is_side_visible(chunk_data, block_position, Vector3.RIGHT, world):
 		verts.append(Vector3(1, 0, 0) + block_position)
 		verts.append(Vector3(1, 0, 1) + block_position)
 		verts.append(Vector3(1, 1, 1) + block_position)
@@ -109,7 +118,7 @@ func _add_block_mesh(block_position: Vector3,
 		_add_face_data(Vector3.RIGHT, vertex_count, mesh_array, block_type)
 
 	# BOTTOM (-Y)
-	if _is_side_visible(chunk_data, block_position, Vector3.DOWN):
+	if _is_side_visible(chunk_data, block_position, Vector3.DOWN, world):
 		verts.append(Vector3(1, 0, 0) + block_position)
 		verts.append(Vector3(0, 0, 0) + block_position)
 		verts.append(Vector3(0, 0, 1) + block_position)
@@ -117,7 +126,7 @@ func _add_block_mesh(block_position: Vector3,
 		_add_face_data(Vector3.DOWN, vertex_count, mesh_array, block_type)
 
 	# TOP (+Y)
-	if _is_side_visible(chunk_data, block_position, Vector3.UP):
+	if _is_side_visible(chunk_data, block_position, Vector3.UP, world):
 		verts.append(Vector3(0, 1, 0) + block_position)
 		verts.append(Vector3(1, 1, 0) + block_position)
 		verts.append(Vector3(1, 1, 1) + block_position)
