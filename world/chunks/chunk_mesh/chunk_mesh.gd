@@ -1,13 +1,22 @@
-@tool
 class_name ChunkMesh extends MeshInstance3D
 
-const VERTS_PER_FACE := 4
+## Generates the mesh of a chunk.
 
+const VERTS_PER_FACE := 4
 const INDEX_APPENDAGE: PackedByteArray = [0, 1, 2, 2, 3, 0]
 
-
-func _debug_regen() -> void:
-	_create_mesh(null)
+const BLOCK_MATERIAL := preload("res://world/blocks/block_material.tres")
+const BLOCK_TEXTURE_SIZE := 16.0
+const BLOCK_ATLAS_SIZE := 16 * 16 ## The size of the block atlas texture, in pixels.
+const BLOCK_TEXTURE_UV_SIZE := 1 / BLOCK_TEXTURE_SIZE
+const NORMAL_TO_DIRECTION := {
+	Vector3.FORWARD: 0,
+	Vector3.BACK: 1,
+	Vector3.LEFT: 2,
+	Vector3.RIGHT: 3,
+	Vector3.DOWN: 4,
+	Vector3.UP: 5,
+}
 
 
 func create_mesh(chunk_data: ChunkData) -> void:
@@ -28,6 +37,7 @@ func _create_mesh(chunk_data: ChunkData) -> void:
 	mesh_array[Mesh.ARRAY_VERTEX] = PackedVector3Array()
 	mesh_array[Mesh.ARRAY_NORMAL] = PackedVector3Array()
 	mesh_array[Mesh.ARRAY_INDEX] = PackedInt32Array()
+	mesh_array[Mesh.ARRAY_TEX_UV] = PackedVector2Array()
 
 	for y in Chunk.SIZE.y:
 		for x in Chunk.SIZE.x:
@@ -35,20 +45,24 @@ func _create_mesh(chunk_data: ChunkData) -> void:
 				var bpos := Vector3(x, y, z)
 				var idx := ChunkData.pos_to_index(bpos)
 				var block := chunk_data.get_block_at(idx)
-				if block == 0:
-					continue
 				_add_block_mesh(bpos, mesh_array, vertex_count, chunk_data)
 
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_array)
+	mesh.surface_set_material(0, BLOCK_MATERIAL)
 
 	print("meshgen took ", Time.get_ticks_msec() - time)
 
 
 func _is_side_visible(data: ChunkData, block_position: Vector3, side: Vector3) -> bool:
-	var block_index := ChunkData.pos_to_index(block_position + side)
-	if block_index < 0 or block_index >= ChunkData.BLOCKS_IN_CHUNK:
-		return false
-	if data.get_block_at(block_index) != 0:
+	var check_position := block_position + side
+	if (check_position.x >= Chunk.SIZE.x or check_position.x < 0
+			or check_position.y >= Chunk.SIZE.y or check_position.y < 0
+			or check_position.z >= Chunk.SIZE.z or check_position.z < 0):
+		return true
+	var block_index := ChunkData.pos_to_index(check_position)
+	var block_id := data.get_block_at(block_index)
+	var block_type := BlockTypes.get_block(block_id)
+	if block_type.mesh_type != BlockType.MeshType.NONE:
 		return false
 	return true
 
@@ -58,8 +72,9 @@ func _add_block_mesh(block_position: Vector3,
 		vertex_count: PackedInt32Array,
 		chunk_data: ChunkData) -> void:
 	var verts: PackedVector3Array = mesh_array[Mesh.ARRAY_VERTEX]
-	var normals: PackedVector3Array = mesh_array[Mesh.ARRAY_NORMAL]
-	var indices: PackedInt32Array = mesh_array[Mesh.ARRAY_INDEX]
+	var block_type := chunk_data.get_block_type_from_pos(block_position)
+	if block_type.mesh_type == BlockType.MeshType.NONE:
+		return
 
 	# NORTH (-Z)
 	if _is_side_visible(chunk_data, block_position, Vector3.FORWARD):
@@ -67,7 +82,7 @@ func _add_block_mesh(block_position: Vector3,
 		verts.append(Vector3(1, 0, 0) + block_position)
 		verts.append(Vector3(1, 1, 0) + block_position)
 		verts.append(Vector3(0, 1, 0) + block_position)
-		_add_face_data(Vector3.FORWARD, vertex_count, mesh_array)
+		_add_face_data(Vector3.FORWARD, vertex_count, mesh_array, block_type)
 
 	# SOUTH (+Z)
 	if _is_side_visible(chunk_data, block_position, Vector3.BACK):
@@ -75,7 +90,7 @@ func _add_block_mesh(block_position: Vector3,
 		verts.append(Vector3(0, 0, 1) + block_position)
 		verts.append(Vector3(0, 1, 1) + block_position)
 		verts.append(Vector3(1, 1, 1) + block_position)
-		_add_face_data(Vector3.BACK, vertex_count, mesh_array)
+		_add_face_data(Vector3.BACK, vertex_count, mesh_array, block_type)
 
 	# WEST (-X)
 	if _is_side_visible(chunk_data, block_position, Vector3.LEFT):
@@ -83,7 +98,7 @@ func _add_block_mesh(block_position: Vector3,
 		verts.append(Vector3(0, 0, 0) + block_position)
 		verts.append(Vector3(0, 1, 0) + block_position)
 		verts.append(Vector3(0, 1, 1) + block_position)
-		_add_face_data(Vector3.LEFT, vertex_count, mesh_array)
+		_add_face_data(Vector3.LEFT, vertex_count, mesh_array, block_type)
 
 	# EAST (+X)
 	if _is_side_visible(chunk_data, block_position, Vector3.RIGHT):
@@ -91,7 +106,7 @@ func _add_block_mesh(block_position: Vector3,
 		verts.append(Vector3(1, 0, 1) + block_position)
 		verts.append(Vector3(1, 1, 1) + block_position)
 		verts.append(Vector3(1, 1, 0) + block_position)
-		_add_face_data(Vector3.RIGHT, vertex_count, mesh_array)
+		_add_face_data(Vector3.RIGHT, vertex_count, mesh_array, block_type)
 
 	# BOTTOM (-Y)
 	if _is_side_visible(chunk_data, block_position, Vector3.DOWN):
@@ -99,7 +114,7 @@ func _add_block_mesh(block_position: Vector3,
 		verts.append(Vector3(0, 0, 0) + block_position)
 		verts.append(Vector3(0, 0, 1) + block_position)
 		verts.append(Vector3(1, 0, 1) + block_position)
-		_add_face_data(Vector3.DOWN, vertex_count, mesh_array)
+		_add_face_data(Vector3.DOWN, vertex_count, mesh_array, block_type)
 
 	# TOP (+Y)
 	if _is_side_visible(chunk_data, block_position, Vector3.UP):
@@ -107,15 +122,16 @@ func _add_block_mesh(block_position: Vector3,
 		verts.append(Vector3(1, 1, 0) + block_position)
 		verts.append(Vector3(1, 1, 1) + block_position)
 		verts.append(Vector3(0, 1, 1) + block_position)
-		_add_face_data(Vector3.UP, vertex_count, mesh_array)
+		_add_face_data(Vector3.UP, vertex_count, mesh_array, block_type)
 
 
 func _add_face_data(
 		normal_direction: Vector3,
 		vertex_count: PackedInt32Array,
-		mesh_array: Array
-		) -> void:
+		mesh_array: Array,
+		block_type: BlockType) -> void:
 	var normals: PackedVector3Array = mesh_array[Mesh.ARRAY_NORMAL]
+	var uvs: PackedVector2Array = mesh_array[Mesh.ARRAY_TEX_UV]
 	var indices: PackedInt32Array = mesh_array[Mesh.ARRAY_INDEX]
 	var cvs := vertex_count[0]
 	for ix in INDEX_APPENDAGE:
@@ -124,4 +140,24 @@ func _add_face_data(
 	normals.append(normal_direction)
 	normals.append(normal_direction)
 	normals.append(normal_direction)
+	var block_atlas_coord: Vector2
+	if block_type.mesh_type == BlockType.MeshType.ALL_ONE:
+		block_atlas_coord = block_type.atlas_coordinates[0]
+	elif block_type.mesh_type == BlockType.MeshType.SIX_SIDES:
+		block_atlas_coord = block_type.atlas_coordinates[NORMAL_TO_DIRECTION[normal_direction]]
+	block_atlas_coord *= BLOCK_TEXTURE_UV_SIZE
+	uvs.append(Vector2(
+			BLOCK_TEXTURE_UV_SIZE + block_atlas_coord.x,
+			BLOCK_TEXTURE_UV_SIZE + block_atlas_coord.y))
+	uvs.append(Vector2(
+			block_atlas_coord.x,
+			BLOCK_TEXTURE_UV_SIZE + block_atlas_coord.y))
+	uvs.append(block_atlas_coord)
+	uvs.append(Vector2(
+			BLOCK_TEXTURE_UV_SIZE + block_atlas_coord.x,
+			block_atlas_coord.y))
+	#uvs.append(Vector2(BLOCK_TEXTURE_UV_SIZE, BLOCK_TEXTURE_UV_SIZE))
+	#uvs.append(Vector2(0.0, BLOCK_TEXTURE_UV_SIZE))
+	#uvs.append(Vector2(0.0, 0.0))
+	#uvs.append(Vector2(BLOCK_TEXTURE_UV_SIZE, 0.0))
 	vertex_count[0] += 4

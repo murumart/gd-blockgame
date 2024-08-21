@@ -1,5 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://klx8164wmk5q"]
+[gd_scene load_steps=4 format=3 uid="uid://klx8164wmk5q"]
 
+[ext_resource type="Script" path="res://addons/simple_free_look_camera/camera.gd" id="1_8mts2"]
 [ext_resource type="PackedScene" uid="uid://c8jaw8ffiq352" path="res://world/chunks/chunk.tscn" id="1_kn7ty"]
 
 [sub_resource type="GDScript" id="GDScript_tfr6n"]
@@ -10,14 +11,23 @@ script/source = "extends Node3D
 
 func _ready() -> void:
 	for chunk: Chunk in $Chunks.get_children():
-		chunk._debug_generate = true
+		chunk._generate()
+		chunk.make_mesh()
 "
 
 [node name="Chunk3dTest" type="Node3D"]
 script = SubResource("GDScript_tfr6n")
 
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
+shadow_enabled = true
+
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.94608, -0.169255, 0.276199, 0, 0.85264, 0.522499, -0.323934, -0.494325, 0.806666, 28.9502, 9.853, 28.0943)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.9502, 18.7446, 28.0943)
+script = ExtResource("1_8mts2")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Camera3D"]
+shadow_enabled = true
 
 [node name="Chunks" type="Node3D" parent="."]
 

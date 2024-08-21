@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="BlockType" load_steps=2 format=3 uid="uid://cawenr2ekihxr"]
+
+[ext_resource type="Script" path="res://world/blocks/block_type.gd" id="1_u6vfn"]
+
+[resource]
+script = ExtResource("1_u6vfn")
+mesh_type = 2
+atlas_coordinates = []
