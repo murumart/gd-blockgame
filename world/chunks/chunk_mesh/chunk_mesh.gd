@@ -20,16 +20,51 @@ const NORMAL_TO_DIRECTION := {
 
 
 func create_mesh(chunk_data: ChunkData, world: World) -> void:
-	var time := Time.get_ticks_msec()
-
-	# store how many vertices have been appended in total
-	var vertex_count := PackedInt32Array()
-	vertex_count.append(0)
-
 	mesh = ArrayMesh.new()
+	_create_mesh(chunk_data, world)
+
+
+func create_mesh_threadsafer(chunk_data: ChunkData, world: World, _mesh: ArrayMesh) -> void:
+	_create_mesh_threadsafer(chunk_data, world, _mesh)
+
+
+func _create_mesh(chunk_data: ChunkData, world: World) -> void:
+	var time := Time.get_ticks_msec()
 
 	if chunk_data.block_data.size() == ChunkData.BYTES_PER_BLOCK:
 		return
+
+	var mesh_array := _create_mesh_data_array(chunk_data, world)
+
+	if mesh_array[Mesh.ARRAY_VERTEX].is_empty():
+		return
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_array)
+	mesh.surface_set_material(0, BLOCK_MATERIAL)
+	print("meshgen took ", Time.get_ticks_msec() - time)
+
+
+func _create_mesh_threadsafer(chunk_data: ChunkData, world: World, _mesh: ArrayMesh) -> void:
+	var time := Time.get_ticks_msec()
+	print("bauau")
+
+	if chunk_data.block_data.size() == ChunkData.BYTES_PER_BLOCK:
+		print("bai")
+		return
+
+	var mesh_array := _create_mesh_data_array(chunk_data, world)
+
+	if mesh_array[Mesh.ARRAY_VERTEX].is_empty():
+		print("mepty")
+		return
+	_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_array)
+	_mesh.surface_set_material(0, BLOCK_MATERIAL)
+	print("meshgen (safe :)) took ", Time.get_ticks_msec() - time)
+
+
+func _create_mesh_data_array(chunk_data: ChunkData, world: World) -> Array:
+	# store how many vertices have been appended in total
+	var vertex_count := PackedInt32Array()
+	vertex_count.append(0)
 
 	var mesh_array := Array()
 	mesh_array.resize(Mesh.ARRAY_MAX)
@@ -45,12 +80,7 @@ func create_mesh(chunk_data: ChunkData, world: World) -> void:
 				var bpos := Vector3(x, y, z)
 				_add_block_mesh(bpos, mesh_array, vertex_count, chunk_data, world)
 
-	if mesh_array[Mesh.ARRAY_VERTEX].is_empty():
-		return
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_array)
-	mesh.surface_set_material(0, BLOCK_MATERIAL)
-
-	print("meshgen took ", Time.get_ticks_msec() - time)
+	return mesh_array
 
 
 func _is_side_visible(
@@ -64,6 +94,8 @@ func _is_side_visible(
 	if (check_position.x >= Chunk.SIZE.x or check_position.x < 0
 			or check_position.y >= Chunk.SIZE.y or check_position.y < 0
 			or check_position.z >= Chunk.SIZE.z or check_position.z < 0):
+		if not is_instance_valid(world):
+			return true
 		check_block_id = world.get_block(check_position + global_position)
 		if check_block_id == BlockTypes.INVALID_BLOCK_ID:
 			return true

@@ -26,9 +26,9 @@ func _ready() -> void:
 
 
 func start_generation() -> void:
-	for x in 3:
+	for x in range(-3, 3):
 		for y in 3:
-			for z in 3:
+			for z in range(-3, 3):
 				var chunk_pos := Vector3(x, y, z)
 				load_chunk(chunk_pos)
 
@@ -51,7 +51,6 @@ func unload_chunk(chunk_pos: Vector3) -> void:
 
 func _update_loaded_chunks() -> void:
 	# generating meshes
-	var gen_time := 0.0
 	for pos in chunks.keys():
 		pos = pos as Vector3
 		var chunk := chunks.get(pos, null) as Chunk
@@ -66,14 +65,15 @@ func _update_loaded_chunks() -> void:
 				break
 		if not can_gen_mesh:
 			continue
-		var tw := create_tween()
-		tw.tween_interval(gen_time)
-		gen_time += 0.1
-		tw.tween_callback(func():
-			if chunk.load_step > Chunk.LoadSteps.BLOCKS_GENNED:
-				return
+		chunk.load_step = Chunk.LoadSteps.MESH_GENNING
+		await get_tree().process_frame
+		if not chunk_loaders.is_empty():
+			if chunk.global_position.distance_squared_to(chunk_loaders[0].global_position) < 8192:
+				chunk.make_mesh()
+			else:
+				chunk.load_step = Chunk.LoadSteps.BLOCKS_GENNED
+		else:
 			chunk.make_mesh()
-		)
 
 	# adding new chunks to be loaded.
 	for loader in chunk_loaders:
@@ -90,7 +90,7 @@ func _update_loaded_chunks() -> void:
 			poses_to_load.append_array(temp)
 		#print(poses_to_load)
 		for pos in poses_to_load:
-			#await get_tree().process_frame
+			await get_tree().process_frame
 			load_chunk(pos)
 
 

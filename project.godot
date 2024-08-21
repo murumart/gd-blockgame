@@ -14,6 +14,10 @@ config/name="gd-blockgame"
 config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://gui/icon.svg"
 
+[display]
+
+window/vsync/vsync_mode=0
+
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0

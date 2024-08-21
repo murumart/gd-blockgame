@@ -1,0 +1,742 @@
+[gd_scene load_steps=8 format=3 uid="uid://dt6qjt3mbdp1x"]
+
+[ext_resource type="PackedScene" uid="uid://c8jaw8ffiq352" path="res://world/chunks/chunk.tscn" id="1_iwmce"]
+[ext_resource type="Script" path="res://addons/simple_free_look_camera/camera.gd" id="2_2l4vf"]
+
+[sub_resource type="GDScript" id="GDScript_imvsh"]
+resource_name = "thread_testing"
+script/source = "extends Node3D
+
+@onready var chunks: Node3D = $Chunks
+
+var mesh_thread := Thread.new()
+
+func _ready() -> void:
+	for chunk: Chunk in chunks.get_children():
+		chunk.generate()
+	mesh_thread.start(make_meshes.bind(chunks.get_children()))
+	#make_meshes_2()
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event.is_action_pressed(\"ui_home\"):
+		mesh_thread.wait_to_finish()
+		get_tree().reload_current_scene()
+
+
+func make_meshes(_chunks) -> void:
+	for chunk: Chunk in _chunks:
+		var mesh := ArrayMesh.new()
+		chunk.mesh.create_mesh_threadsafer(chunk.data, chunk.world, mesh)
+		chunk.mesh.set_deferred(\"mesh\", mesh)
+
+
+func make_meshes_2() -> void:
+	for chunk: Chunk in chunks.get_children():
+		chunk.mesh.mesh = ArrayMesh.new()
+		mesh_thread.start(chunk.mesh._create_mesh_data_array.bind(chunk.data, chunk.world))
+		var array = mesh_thread.wait_to_finish()
+		await get_tree().process_frame
+		chunk.mesh.mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, array)
+		chunk.mesh.mesh.surface_set_material(0, ChunkMesh.BLOCK_MATERIAL)
+"
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pugjo"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_dm0ac"]
+sky_material = SubResource("ProceduralSkyMaterial_pugjo")
+
+[sub_resource type="Environment" id="Environment_qxnlt"]
+background_mode = 2
+sky = SubResource("Sky_dm0ac")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_44fmc"]
+size = Vector2(999, 999)
+
+[node name="ThreadsTesting" type="Node3D"]
+script = SubResource("GDScript_imvsh")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_qxnlt")
+
+[node name="FreeLookCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.7446, 38.4157, 43.6386)
+script = ExtResource("2_2l4vf")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_44fmc")
+
+[node name="Chunks" type="Node3D" parent="."]
+
+[node name="Chunk" parent="Chunks" instance=ExtResource("1_iwmce")]
+
+[node name="Chunk2" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 0)
+
+[node name="Chunk10" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 0)
+
+[node name="Chunk3" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 16)
+
+[node name="Chunk4" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 16)
+
+[node name="Chunk5" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 16)
+
+[node name="Chunk6" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 16)
+
+[node name="Chunk7" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 32)
+
+[node name="Chunk9" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 32)
+
+[node name="Chunk8" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 32)
+
+[node name="Chunk11" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, 0)
+
+[node name="Chunk12" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, 0)
+
+[node name="Chunk13" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 16, 0)
+
+[node name="Chunk14" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, 16)
+
+[node name="Chunk15" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, 16)
+
+[node name="Chunk16" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, 16)
+
+[node name="Chunk17" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 16, 16)
+
+[node name="Chunk18" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, 32)
+
+[node name="Chunk19" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, 32)
+
+[node name="Chunk20" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 16, 32)
+
+[node name="Chunk21" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -48)
+
+[node name="Chunk22" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, -48)
+
+[node name="Chunk23" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, -48)
+
+[node name="Chunk24" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -32)
+
+[node name="Chunk25" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, -32)
+
+[node name="Chunk26" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, -32)
+
+[node name="Chunk27" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, -32)
+
+[node name="Chunk28" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, -16)
+
+[node name="Chunk29" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -16)
+
+[node name="Chunk30" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, -16)
+
+[node name="Chunk31" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, -48)
+
+[node name="Chunk32" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, -48)
+
+[node name="Chunk33" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 16, -48)
+
+[node name="Chunk34" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, -32)
+
+[node name="Chunk35" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, -32)
+
+[node name="Chunk36" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, -32)
+
+[node name="Chunk37" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 16, -32)
+
+[node name="Chunk38" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, -16)
+
+[node name="Chunk39" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, -16)
+
+[node name="Chunk40" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 16, -16)
+
+[node name="Chunk44" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -80)
+
+[node name="Chunk45" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, -80)
+
+[node name="Chunk46" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, -80)
+
+[node name="Chunk47" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, -80)
+
+[node name="Chunk48" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, -64)
+
+[node name="Chunk49" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -64)
+
+[node name="Chunk50" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, -64)
+
+[node name="Chunk54" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, -80)
+
+[node name="Chunk55" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, -80)
+
+[node name="Chunk56" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, -80)
+
+[node name="Chunk57" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 16, -80)
+
+[node name="Chunk58" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, -64)
+
+[node name="Chunk59" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, -64)
+
+[node name="Chunk60" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 16, -64)
+
+[node name="Chunk41" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 0, 0)
+
+[node name="Chunk42" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, 0)
+
+[node name="Chunk43" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, 0)
+
+[node name="Chunk51" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 0, 16)
+
+[node name="Chunk52" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, 16)
+
+[node name="Chunk53" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, 16)
+
+[node name="Chunk61" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, 16)
+
+[node name="Chunk62" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, 32)
+
+[node name="Chunk63" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 0, 32)
+
+[node name="Chunk64" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, 32)
+
+[node name="Chunk65" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 16, 0)
+
+[node name="Chunk66" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, 0)
+
+[node name="Chunk67" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 16, 0)
+
+[node name="Chunk68" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 16, 16)
+
+[node name="Chunk69" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, 16)
+
+[node name="Chunk70" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, 16)
+
+[node name="Chunk71" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 16, 16)
+
+[node name="Chunk72" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, 32)
+
+[node name="Chunk73" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 16, 32)
+
+[node name="Chunk74" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 16, 32)
+
+[node name="Chunk75" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 0, -48)
+
+[node name="Chunk76" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, -48)
+
+[node name="Chunk77" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, -48)
+
+[node name="Chunk78" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 0, -32)
+
+[node name="Chunk79" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, -32)
+
+[node name="Chunk80" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, -32)
+
+[node name="Chunk81" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, -32)
+
+[node name="Chunk82" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, -16)
+
+[node name="Chunk83" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 0, -16)
+
+[node name="Chunk84" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, -16)
+
+[node name="Chunk85" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 16, -48)
+
+[node name="Chunk86" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, -48)
+
+[node name="Chunk87" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 16, -48)
+
+[node name="Chunk88" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 16, -32)
+
+[node name="Chunk89" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, -32)
+
+[node name="Chunk90" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, -32)
+
+[node name="Chunk91" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 16, -32)
+
+[node name="Chunk92" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, -16)
+
+[node name="Chunk93" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 16, -16)
+
+[node name="Chunk94" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 16, -16)
+
+[node name="Chunk95" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 0, -80)
+
+[node name="Chunk96" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, -80)
+
+[node name="Chunk97" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, -80)
+
+[node name="Chunk98" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, -80)
+
+[node name="Chunk99" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, -64)
+
+[node name="Chunk100" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 0, -64)
+
+[node name="Chunk101" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, -64)
+
+[node name="Chunk102" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 16, -80)
+
+[node name="Chunk103" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, -80)
+
+[node name="Chunk104" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, -80)
+
+[node name="Chunk105" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 16, -80)
+
+[node name="Chunk106" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, -64)
+
+[node name="Chunk107" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 16, -64)
+
+[node name="Chunk108" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 16, -64)
+
+[node name="Chunk109" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 0, 0)
+
+[node name="Chunk110" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, 0)
+
+[node name="Chunk111" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, 0)
+
+[node name="Chunk112" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 0, 16)
+
+[node name="Chunk113" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, 16)
+
+[node name="Chunk114" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, 16)
+
+[node name="Chunk115" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, 16)
+
+[node name="Chunk116" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, 32)
+
+[node name="Chunk117" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 0, 32)
+
+[node name="Chunk118" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, 32)
+
+[node name="Chunk119" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 16, 0)
+
+[node name="Chunk120" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, 0)
+
+[node name="Chunk121" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 16, 0)
+
+[node name="Chunk122" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 16, 16)
+
+[node name="Chunk123" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, 16)
+
+[node name="Chunk124" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, 16)
+
+[node name="Chunk125" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 16, 16)
+
+[node name="Chunk126" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, 32)
+
+[node name="Chunk127" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 16, 32)
+
+[node name="Chunk128" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 16, 32)
+
+[node name="Chunk163" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 48)
+
+[node name="Chunk164" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 48)
+
+[node name="Chunk165" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 48)
+
+[node name="Chunk166" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 64)
+
+[node name="Chunk167" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 64)
+
+[node name="Chunk168" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 64)
+
+[node name="Chunk169" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 64)
+
+[node name="Chunk170" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 80)
+
+[node name="Chunk171" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 80)
+
+[node name="Chunk172" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 80)
+
+[node name="Chunk173" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, 48)
+
+[node name="Chunk174" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, 48)
+
+[node name="Chunk175" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 16, 48)
+
+[node name="Chunk176" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, 64)
+
+[node name="Chunk177" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, 64)
+
+[node name="Chunk178" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, 64)
+
+[node name="Chunk179" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 16, 64)
+
+[node name="Chunk180" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, 80)
+
+[node name="Chunk181" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, 80)
+
+[node name="Chunk182" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 16, 80)
+
+[node name="Chunk183" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 0, 48)
+
+[node name="Chunk184" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, 48)
+
+[node name="Chunk185" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, 48)
+
+[node name="Chunk186" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 0, 64)
+
+[node name="Chunk187" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, 64)
+
+[node name="Chunk188" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, 64)
+
+[node name="Chunk189" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, 64)
+
+[node name="Chunk190" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 0, 80)
+
+[node name="Chunk191" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 0, 80)
+
+[node name="Chunk192" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, 80)
+
+[node name="Chunk193" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 16, 48)
+
+[node name="Chunk194" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, 48)
+
+[node name="Chunk195" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 16, 48)
+
+[node name="Chunk196" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 16, 64)
+
+[node name="Chunk197" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, 64)
+
+[node name="Chunk198" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, 64)
+
+[node name="Chunk199" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 16, 64)
+
+[node name="Chunk200" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 16, 80)
+
+[node name="Chunk201" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 16, 80)
+
+[node name="Chunk202" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 16, 80)
+
+[node name="Chunk203" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 0, 48)
+
+[node name="Chunk204" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, 48)
+
+[node name="Chunk205" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, 48)
+
+[node name="Chunk206" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 0, 64)
+
+[node name="Chunk207" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, 64)
+
+[node name="Chunk208" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, 64)
+
+[node name="Chunk209" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, 64)
+
+[node name="Chunk210" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, 80)
+
+[node name="Chunk211" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 0, 80)
+
+[node name="Chunk212" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, 80)
+
+[node name="Chunk213" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 16, 48)
+
+[node name="Chunk214" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, 48)
+
+[node name="Chunk215" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 16, 48)
+
+[node name="Chunk216" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 16, 64)
+
+[node name="Chunk217" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, 64)
+
+[node name="Chunk218" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, 64)
+
+[node name="Chunk219" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 16, 64)
+
+[node name="Chunk220" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, 80)
+
+[node name="Chunk221" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 16, 80)
+
+[node name="Chunk222" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 16, 80)
+
+[node name="Chunk129" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 0, -48)
+
+[node name="Chunk130" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, -48)
+
+[node name="Chunk131" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, -48)
+
+[node name="Chunk132" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 0, -32)
+
+[node name="Chunk133" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, -32)
+
+[node name="Chunk134" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, -32)
+
+[node name="Chunk135" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, -32)
+
+[node name="Chunk136" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, -16)
+
+[node name="Chunk137" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 0, -16)
+
+[node name="Chunk138" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, -16)
+
+[node name="Chunk139" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 16, -48)
+
+[node name="Chunk140" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, -48)
+
+[node name="Chunk141" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 16, -48)
+
+[node name="Chunk142" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 16, -32)
+
+[node name="Chunk143" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, -32)
+
+[node name="Chunk144" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, -32)
+
+[node name="Chunk145" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 16, -32)
+
+[node name="Chunk146" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, -16)
+
+[node name="Chunk147" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 16, -16)
+
+[node name="Chunk148" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 16, -16)
+
+[node name="Chunk149" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 0, -80)
+
+[node name="Chunk150" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, -80)
+
+[node name="Chunk151" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, -80)
+
+[node name="Chunk152" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, -80)
+
+[node name="Chunk153" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, -64)
+
+[node name="Chunk154" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 0, -64)
+
+[node name="Chunk155" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, -64)
+
+[node name="Chunk156" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 16, -80)
+
+[node name="Chunk157" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, -80)
+
+[node name="Chunk158" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, -80)
+
+[node name="Chunk159" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 16, -80)
+
+[node name="Chunk160" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 16, -64)
+
+[node name="Chunk161" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96, 16, -64)
+
+[node name="Chunk162" parent="Chunks" instance=ExtResource("1_iwmce")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 16, -64)

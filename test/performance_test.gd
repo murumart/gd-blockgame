@@ -11,7 +11,7 @@ func _ready() -> void:
 
 
 func _perf_test() -> void:
-	_static_or_copy()
+	pass
 
 
 ## 1000*16*16*16 loops, no consts: 17336, with consts: 17370.

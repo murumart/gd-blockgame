@@ -5,6 +5,7 @@ class_name Chunk extends Node3D
 enum LoadSteps {
 	UNLOADED, ## Chunk hasn't been loaded, but exists.
 	BLOCKS_GENNED, ## Chunk has its blocks generated, but not mesh.
+	MESH_GENNING, ## Mesh is generating on the thread.
 	MESH_GENNED, ## Chunk has its mesh generated and is visible.
 }
 
@@ -18,6 +19,10 @@ var load_step: LoadSteps
 var world: World
 
 @export var mesh: ChunkMesh
+
+
+func _ready() -> void:
+	$BoundingBox.hide()
 
 
 func generate() -> void:
