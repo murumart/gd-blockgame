@@ -51,7 +51,7 @@ func unload_chunk(chunk_pos: Vector3) -> void:
 
 func _update_loaded_chunks() -> void:
 	# generating meshes
-	for pos in chunks.keys():
+	for pos: Vector3 in chunks.keys():
 		pos = pos as Vector3
 		var chunk := chunks.get(pos, null) as Chunk
 		if not is_instance_valid(chunk):
@@ -82,7 +82,9 @@ func _update_loaded_chunks() -> void:
 		for i in loader.load_distance:
 			var temp: PackedVector3Array = []
 			for pos in poses_to_load:
+				var j := -1
 				for neighbor in NEIGHBOUR_ADDS:
+					j += 1
 					var new := pos + neighbor
 					if new in poses_to_load or new in temp:
 						continue

@@ -13,6 +13,7 @@ script/source = "extends Node3D
 
 func _ready() -> void:
 	pass
+	#RenderingServer.viewport_set_debug_draw(get_viewport().get_viewport_rid(), RenderingServer.VIEWPORT_DEBUG_DRAW_WIREFRAME)
 "
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_hhte1"]
@@ -48,7 +49,7 @@ omni_range = 12.0
 
 [node name="ChunkLoader" type="Node3D" parent="Camera3D"]
 script = ExtResource("2_0dstt")
-load_distance = 5
+load_distance = 6
 
 [node name="World" parent="." node_paths=PackedStringArray("chunk_loaders") instance=ExtResource("2_3n2ij")]
 chunk_loaders = [NodePath("../Camera3D/ChunkLoader")]
