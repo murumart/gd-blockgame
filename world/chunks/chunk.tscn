@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://c8jaw8ffiq352"]
+[gd_scene load_steps=7 format=3 uid="uid://c8jaw8ffiq352"]
 
 [ext_resource type="Script" path="res://world/chunks/chunk.gd" id="1_sludj"]
 [ext_resource type="Script" path="res://world/chunks/chunk_mesh/chunk_mesh.gd" id="2_471ym"]
+[ext_resource type="PackedScene" uid="uid://sbejva68qctp" path="res://test/chunk_debug_info.tscn" id="3_tckht"]
 
 [sub_resource type="PlaceholderMesh" id="PlaceholderMesh_ys3x4"]
 
@@ -31,3 +32,7 @@ script = ExtResource("2_471ym")
 [node name="BoundingBox" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 8, 8)
 mesh = SubResource("BoxMesh_a704f")
+
+[node name="ChunkDebugInfo" parent="." node_paths=PackedStringArray("chunk") instance=ExtResource("3_tckht")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 8, 8)
+chunk = NodePath("..")

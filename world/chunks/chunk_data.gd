@@ -23,6 +23,8 @@ func clear_block_data() -> void:
 
 func init_block_data() -> void:
 	block_data.resize(BLOCK_DATA_SIZE)
+	for x in BLOCKS_IN_CHUNK:
+		set_block_at(x, 3)
 
 
 func set_block_at(idx: int, data: int) -> void:
@@ -37,6 +39,7 @@ func get_block_at(idx: int) -> int:
 	if block_data.size() == BYTES_PER_BLOCK:
 		return block_data.decode_u16(0)
 	idx *= BYTES_PER_BLOCK
+	#assert(not (idx < 0 or idx > block_data.size() - 2))
 	return block_data.decode_u16(idx)
 
 

@@ -8,7 +8,7 @@ var exit_thread := false
 
 
 # The thread will start here.
-func _ready():
+func _ready() -> void:
 	thread.start(_thread_function)
 
 
@@ -21,14 +21,14 @@ func _physics_process(delta: float) -> void:
 		get_tree().change_scene_to_file("res://test/chunk_3d_test.tscn")
 
 
-func _thread_function():
+func _thread_function() -> void:
 	while true:
 		print("before wait")
 		semaphore.wait() # Wait until posted.
 		print("not wait")
 
 		mutex.lock()
-		var should_exit = exit_thread # Protect with Mutex.
+		var should_exit := exit_thread # Protect with Mutex.
 		mutex.unlock()
 
 		if should_exit:
@@ -39,20 +39,20 @@ func _thread_function():
 		mutex.unlock()
 
 
-func increment_counter():
+func increment_counter() -> void:
 	semaphore.post() # Make the thread process.
 
 
-func get_counter():
+func get_counter() -> int:
 	mutex.lock()
 	# Copy counter, protect with Mutex.
-	var counter_value = counter
+	var counter_value := counter
 	mutex.unlock()
 	return counter_value
 
 
 # Thread must be disposed (or "joined"), for portability.
-func _exit_tree():
+func _exit_tree() -> void:
 	# Set exit condition to true.
 	mutex.lock()
 	exit_thread = true # Protect with Mutex.

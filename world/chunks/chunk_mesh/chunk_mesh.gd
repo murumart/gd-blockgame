@@ -18,9 +18,12 @@ const NORMAL_TO_DIRECTION := {
 	Vector3.UP: 5,
 }
 
+static var chunk_mesh_thread := ChunkMeshThread.new()
+
 
 func create_mesh(chunk_data: ChunkData, world: World) -> void:
 	mesh = ArrayMesh.new()
+	assert(not chunk_data.block_data.is_empty())
 	_create_mesh(chunk_data, world)
 
 

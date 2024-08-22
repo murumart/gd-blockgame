@@ -1,12 +1,17 @@
-[gd_scene load_steps=2 format=3 uid="uid://xv0bwgrtwil2"]
+[gd_scene load_steps=3 format=3 uid="uid://xv0bwgrtwil2"]
 
 [ext_resource type="Script" path="res://world/world.gd" id="1_8gx7b"]
+[ext_resource type="Script" path="res://world/world_generator.gd" id="2_ggral"]
 
-[node name="World" type="Node3D"]
+[node name="World" type="Node3D" node_paths=PackedStringArray("world_generator")]
 script = ExtResource("1_8gx7b")
+world_generator = NodePath("WorldGenerator")
 
 [node name="ChunksParent" type="Node3D" parent="."]
 
 [node name="ChunkLoaderTimer" type="Timer" parent="."]
 wait_time = 1.127
 autostart = true
+
+[node name="WorldGenerator" type="Node" parent="."]
+script = ExtResource("2_ggral")

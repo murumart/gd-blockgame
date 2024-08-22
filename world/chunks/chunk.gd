@@ -2,6 +2,8 @@ class_name Chunk extends Node3D
 
 ## Chunk of the world. Consists of blocks
 
+signal block_gen_requested(this: Chunk)
+
 enum LoadSteps {
 	UNLOADED, ## Chunk hasn't been loaded, but exists.
 	BLOCKS_GENNED, ## Chunk has its blocks generated, but not mesh.
@@ -28,6 +30,18 @@ func _ready() -> void:
 func generate() -> void:
 	data.clear_block_data()
 	data.init_block_data()
+	block_gen_requested.emit(self)
+
+
+func _generation_thread_finished() -> void:
+	load_step = LoadSteps.BLOCKS_GENNED
+	print("generation of ", name, " finished. ")
+	assert(not data.block_data.is_empty())
+
+
+func __builtin_generation() -> void:
+	data.clear_block_data()
+	data.init_block_data()
 	var time := Time.get_ticks_msec()
 	var data_empty := true
 	for y in SIZE.y:
@@ -51,8 +65,9 @@ func generate() -> void:
 
 func make_mesh() -> void:
 	#mesh.call_deferred("create_mesh", data)
+	if data.block_data.is_empty():
+		return
 	mesh.create_mesh(data, world)
-	load_step = LoadSteps.MESH_GENNED
 
 
 func get_block_local(internal_pos: Vector3) -> int:
