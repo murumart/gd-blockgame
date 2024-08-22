@@ -74,9 +74,7 @@ func _update_loaded_chunks() -> void:
 				break
 		if not can_gen_mesh:
 			continue
-
-		chunk.load_step = Chunk.LoadSteps.MESH_GENNING
-		await get_tree().process_frame
+		#await get_tree().process_frame
 		chunk.make_mesh()
 
 	# adding new chunks to be loaded.

@@ -25,6 +25,9 @@ var world: World
 
 func _ready() -> void:
 	$BoundingBox.hide()
+	mesh.meshing_finished.connect(func() -> void:
+		load_step = LoadSteps.MESH_GENNED
+	)
 
 
 func generate() -> void:
@@ -67,7 +70,9 @@ func make_mesh() -> void:
 	#mesh.call_deferred("create_mesh", data)
 	if data.block_data.is_empty():
 		return
-	mesh.create_mesh(data, world)
+	#mesh.create_mesh(data, world)
+	if mesh.create_mesh_thread(data, world):
+		load_step = LoadSteps.MESH_GENNING
 
 
 func get_block_local(internal_pos: Vector3) -> int:

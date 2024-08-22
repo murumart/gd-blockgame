@@ -2,6 +2,8 @@ class_name ChunkMesh extends MeshInstance3D
 
 ## Generates the mesh of a chunk.
 
+signal meshing_finished
+
 const VERTS_PER_FACE := 4
 const INDEX_APPENDAGE: PackedByteArray = [0, 1, 2, 2, 3, 0]
 
@@ -18,7 +20,11 @@ const NORMAL_TO_DIRECTION := {
 	Vector3.UP: 5,
 }
 
-static var chunk_mesh_thread := ChunkMeshThread.new()
+static var chunk_mesh_threads: Array[ChunkMeshThread] = [
+	ChunkMeshThread.new(),
+	#ChunkMeshThread.new(),
+	#ChunkMeshThread.new(),
+]
 
 
 func create_mesh(chunk_data: ChunkData, world: World) -> void:
@@ -27,8 +33,17 @@ func create_mesh(chunk_data: ChunkData, world: World) -> void:
 	_create_mesh(chunk_data, world)
 
 
-func create_mesh_threadsafer(chunk_data: ChunkData, world: World, _mesh: ArrayMesh) -> void:
-	_create_mesh_threadsafer(chunk_data, world, _mesh)
+func create_mesh_thread(chunk_data: ChunkData, world: World) -> bool:
+	return chunk_mesh_threads[0].generate_mesh(self, world, chunk_data)
+	#for thread in chunk_mesh_threads:
+		#if thread.generate_mesh(self, world, chunk_data):
+			#return true
+	#return false
+
+
+func _mesh_thread_finished(new_mesh: ArrayMesh) -> void:
+	mesh = new_mesh
+	meshing_finished.emit()
 
 
 func _create_mesh(chunk_data: ChunkData, world: World) -> void:
@@ -44,24 +59,6 @@ func _create_mesh(chunk_data: ChunkData, world: World) -> void:
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_array)
 	mesh.surface_set_material(0, BLOCK_MATERIAL)
 	print("meshgen took ", Time.get_ticks_msec() - time)
-
-
-func _create_mesh_threadsafer(chunk_data: ChunkData, world: World, _mesh: ArrayMesh) -> void:
-	var time := Time.get_ticks_msec()
-	print("bauau")
-
-	if chunk_data.block_data.size() == ChunkData.BYTES_PER_BLOCK:
-		print("bai")
-		return
-
-	var mesh_array := _create_mesh_data_array(chunk_data, world)
-
-	if mesh_array[Mesh.ARRAY_VERTEX].is_empty():
-		print("mepty")
-		return
-	_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_array)
-	_mesh.surface_set_material(0, BLOCK_MATERIAL)
-	print("meshgen (safe :)) took ", Time.get_ticks_msec() - time)
 
 
 func _create_mesh_data_array(chunk_data: ChunkData, world: World) -> Array:
