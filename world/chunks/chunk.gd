@@ -37,7 +37,6 @@ func _ready() -> void:
 func generate() -> void:
 	data.clear_block_data()
 	data.init_block_data()
-	_history[Engine.get_process_frames()] = "requesting block generation"
 	block_gen_requested.emit(self)
 
 

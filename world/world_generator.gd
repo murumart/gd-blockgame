@@ -4,7 +4,6 @@ const MAX_QUEUE_SIZE := 512124317241
 
 var _thread := Thread.new()
 var _semaph := Semaphore.new()
-var _queue: Array[Chunk]
 var active := false
 
 var _generating_chunk: Chunk
@@ -12,6 +11,7 @@ var _generating_chunk_position: Vector3
 var _generating_chunk_data: ChunkData
 
 var _settings: GeneratorSettings
+@export var _world: World
 
 
 func _init() -> void:
@@ -20,17 +20,20 @@ func _init() -> void:
 
 func start_generating(_chunk: Chunk) -> void:
 	if active:
-		if _queue.size() >= MAX_QUEUE_SIZE:
-			return
-		_queue.append(_chunk)
-		#print("-- gque: add chunk ", _chunk.name)
 		return
 	_generating_chunk = _chunk
+	_chunk._history[Engine.get_process_frames()] = "posting for block gen"
 	_generating_chunk_position = _chunk.global_position
 	_generating_chunk_data = _chunk.data
 	#print("-- qgue: post chunk " + _chunk.name)
 	active = true
 	_semaph.post()
+
+
+func _on_chunk_gen_requested(chunk: Chunk) -> void:
+	if chunk.load_step > Chunk.LoadSteps.UNLOADED:
+		return
+	start_generating(chunk)
 
 
 func _threaded_generation() -> void:
@@ -61,23 +64,27 @@ func _threaded_generation() -> void:
 
 
 func _process(delta: float) -> void:
-	for x in 30:
-		_check_queue()
+	_visible_chunk_positions = get_chunk_poses_to_load_sorted()
+	_process_chunks()
 
 
-func _check_queue() -> void:
-	if active or _queue.is_empty():
-		return
-	if not is_instance_valid(_queue[0]):
-		_queue.remove_at(0)
-		return
-	var first: Chunk = _queue.pop_front()
-	if not is_instance_valid(first):
-		return
-	#print("-- gque: ", _queue.size())
-	if first.load_step > 0:
-		return
-	start_generating(first)
+var _visible_chunk_positions: PackedVector3Array = []
+var _index := 0
+func _process_chunks() -> void:
+	for i in 3:
+		if _index < 0 or _index >= _visible_chunk_positions.size():
+			_index = 0
+		if _visible_chunk_positions.is_empty():
+			_index = 0
+			return
+		var pos := _visible_chunk_positions[_index]
+		_index += 1
+		var chunk := _world.load_chunk(pos)
+		if not is_instance_valid(chunk):
+			return
+		if chunk.load_step == Chunk.LoadSteps.UNLOADED:
+			chunk.generate()
+
 
 
 func get_block_at(global_position: Vector3) -> int:
@@ -93,6 +100,62 @@ func get_block_at(global_position: Vector3) -> int:
 	#elif global_position.y < ypos:
 		#return 2 if randf() < 0.5 else 1
 	#return 0
+
+
+func _get_chunk_poses_to_load() -> PackedVector3Array:
+	var toreturn: PackedVector3Array = []
+	for loader in _world.chunk_loaders:
+		var chunk_pos := World.global_pos_to_chunk_pos(loader.global_position)
+		#var vertical_distance := maxi(loader.load_distance / 3, 1)
+		#var LOADER_Y := range(
+				#chunk_pos.y + vertical_distance,
+				#chunk_pos.y - vertical_distance - 1,
+				#-1)
+		#for y: int in LOADER_Y:
+			#var dist := absf(chunk_pos.y - y)
+			#toreturn.append_array(
+					#WorldGenerator.get_diamond(Vector3(chunk_pos.x, y, chunk_pos.z),
+					#loader.load_distance - dist))
+		toreturn.append(chunk_pos)
+		toreturn.append(chunk_pos + Vector3.LEFT)
+		toreturn.append(chunk_pos + Vector3.FORWARD)
+		toreturn.append(chunk_pos + Vector3.RIGHT)
+		toreturn.append(chunk_pos + Vector3.BACK)
+		toreturn.append(chunk_pos + Vector3.DOWN)
+		toreturn.append(chunk_pos + Vector3.UP)
+		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos, loader.load_distance))
+		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos + Vector3.DOWN, loader.load_distance - 3))
+		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos + Vector3.UP, loader.load_distance - 3))
+	return toreturn
+
+
+func get_chunk_poses_to_load_sorted() -> PackedVector3Array:
+	var time := Time.get_ticks_msec()
+	var toreturn: Array[Vector3] = []
+	var chunk_pos: Vector3
+	for loader in _world.chunk_loaders:
+		chunk_pos = World.global_pos_to_chunk_pos(loader.global_position)
+		#toreturn.append(chunk_pos)
+		#toreturn.append(chunk_pos + Vector3.LEFT)
+		#toreturn.append(chunk_pos + Vector3.FORWARD)
+		#toreturn.append(chunk_pos + Vector3.RIGHT)
+		#toreturn.append(chunk_pos + Vector3.BACK)
+		#toreturn.append(chunk_pos + Vector3.DOWN)
+		#toreturn.append(chunk_pos + Vector3.UP)
+		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos, loader.load_distance))
+		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos + Vector3.DOWN, loader.load_distance - 3))
+		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos + Vector3.UP, loader.load_distance - 3))
+		#toreturn.append_array(WorldGenerator.get_diamond(chunk_pos, loader.load_distance))
+	toreturn.sort_custom(_sort_poses_by_distance_from_loader.bind(chunk_pos))
+	#print("getting loadable chnks took ", Time.get_ticks_msec() - time, " ms")
+	return toreturn
+
+
+func _sort_poses_by_distance_from_loader(pos1: Vector3, pos2: Vector3, centerpos: Vector3) -> bool:
+	var dis1 := pos1.distance_squared_to(centerpos)
+	var dis2 := pos1.distance_squared_to(centerpos)
+	#print("comparing ", dis1, " ", dis2, " ", pos1, " ", pos2, " against ", centerpos)
+	return dis1 > dis2
 
 
 func _exit_tree() -> void:

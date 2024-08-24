@@ -13,5 +13,6 @@ world_generator = NodePath("WorldGenerator")
 wait_time = 0.127
 autostart = true
 
-[node name="WorldGenerator" type="Node" parent="."]
+[node name="WorldGenerator" type="Node" parent="." node_paths=PackedStringArray("_world")]
 script = ExtResource("2_ggral")
+_world = NodePath("..")

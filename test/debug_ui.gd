@@ -16,5 +16,5 @@ func get_text() -> String:
 			+ "\npos: " + str(camera.global_position)
 			+ "\nchunk_pos: " + str(chunk_pos)
 			+ "\npos_in_chunk: " + str(camera.global_position.round() - chunk_pos * Vector3(Chunk.SIZE))
-			+ "\ngen_queue_size: " + str(world.world_generator._queue.size())
+			#+ "\ngen_queue_size: " + str(world.world_generator._queue.size())
 	)

@@ -35,23 +35,17 @@ func _start_generation() -> void:
 	world_generator._settings = generator_settings
 
 
-func load_chunk(chunk_pos: Vector3) -> void:
+func load_chunk(chunk_pos: Vector3) -> Chunk:
 	if is_instance_valid(chunks.get(chunk_pos)):
-		return
+		return chunks.get(chunk_pos)
 	var chunk := ChunkScene.instantiate()
 	chunk.world = self
 	chunks[chunk_pos] = chunk
 	_chunks_parent.add_child(chunk)
 	chunk.name = str(chunk_pos)
 	chunk.global_position = chunk_pos * Vector3(Chunk.SIZE)
-	chunk.block_gen_requested.connect(_on_chunk_gen_requested)
-	chunk.generate.call_deferred()
-
-
-func _on_chunk_gen_requested(chunk: Chunk) -> void:
-	if chunk.load_step > 0:
-		return
-	world_generator.start_generating(chunk)
+	chunk.block_gen_requested.connect(world_generator._on_chunk_gen_requested)
+	return chunk
 
 
 func unload_chunk(chunk_pos: Vector3) -> void:
@@ -62,7 +56,7 @@ func unload_chunk(chunk_pos: Vector3) -> void:
 
 
 func _update_loaded_chunks() -> void:
-	var poses_to_load := _get_chunk_poses_to_load_sorted()
+	var poses_to_load := world_generator.get_chunk_poses_to_load_sorted()
 	# generating meshes
 	for pos in poses_to_load:
 		var chunk := chunks.get(pos, null) as Chunk
@@ -86,9 +80,15 @@ func _update_loaded_chunks() -> void:
 		chunk.make_mesh(self)
 
 	# adding new chunks to be loaded.
-	for pos in poses_to_load:
-		#await get_tree().process_frame
-		load_chunk(pos)
+	#var c := 0
+	#for pos in poses_to_load:
+		##await get_tree().process_frame
+		#var chunk := load_chunk(pos)
+		#if is_instance_valid(chunk) and chunk.load_step == Chunk.LoadSteps.UNLOADED:
+			#chunk.generate()
+		#c += 1
+		#if c > 20:
+			#break
 
 	# unload chunks that don't are loaded should
 	const MAX_DELETIONS := 2
@@ -99,62 +99,6 @@ func _update_loaded_chunks() -> void:
 			i += 1
 			if i >= MAX_DELETIONS:
 				break
-
-
-func _get_chunk_poses_to_load() -> PackedVector3Array:
-	var toreturn: PackedVector3Array = []
-	for loader in chunk_loaders:
-		var chunk_pos := World.global_pos_to_chunk_pos(loader.global_position)
-		#var vertical_distance := maxi(loader.load_distance / 3, 1)
-		#var LOADER_Y := range(
-				#chunk_pos.y + vertical_distance,
-				#chunk_pos.y - vertical_distance - 1,
-				#-1)
-		#for y: int in LOADER_Y:
-			#var dist := absf(chunk_pos.y - y)
-			#toreturn.append_array(
-					#WorldGenerator.get_diamond(Vector3(chunk_pos.x, y, chunk_pos.z),
-					#loader.load_distance - dist))
-		toreturn.append(chunk_pos)
-		toreturn.append(chunk_pos + Vector3.LEFT)
-		toreturn.append(chunk_pos + Vector3.FORWARD)
-		toreturn.append(chunk_pos + Vector3.RIGHT)
-		toreturn.append(chunk_pos + Vector3.BACK)
-		toreturn.append(chunk_pos + Vector3.DOWN)
-		toreturn.append(chunk_pos + Vector3.UP)
-		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos, loader.load_distance))
-		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos + Vector3.DOWN, loader.load_distance - 3))
-		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos + Vector3.UP, loader.load_distance - 3))
-	return toreturn
-
-
-func _get_chunk_poses_to_load_sorted() -> Array[Vector3]:
-	var time := Time.get_ticks_msec()
-	var toreturn: Array[Vector3] = []
-	var chunk_pos: Vector3
-	for loader in chunk_loaders:
-		chunk_pos = World.global_pos_to_chunk_pos(loader.global_position)
-		toreturn.append(chunk_pos)
-		toreturn.append(chunk_pos + Vector3.LEFT)
-		toreturn.append(chunk_pos + Vector3.FORWARD)
-		toreturn.append(chunk_pos + Vector3.RIGHT)
-		toreturn.append(chunk_pos + Vector3.BACK)
-		toreturn.append(chunk_pos + Vector3.DOWN)
-		toreturn.append(chunk_pos + Vector3.UP)
-		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos, loader.load_distance))
-		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos + Vector3.DOWN, loader.load_distance - 3))
-		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos + Vector3.UP, loader.load_distance - 3))
-		#toreturn.append_array(WorldGenerator.get_diamond(chunk_pos, loader.load_distance))
-	toreturn.sort_custom(_sort_poses_by_distance_from_loader.bind(chunk_pos))
-	#print("getting loadable chnks took ", Time.get_ticks_msec() - time, " ms")
-	return toreturn
-
-
-func _sort_poses_by_distance_from_loader(pos1: Vector3, pos2: Vector3, centerpos: Vector3) -> bool:
-	var dis1 := pos1.distance_squared_to(centerpos)
-	var dis2 := pos1.distance_squared_to(centerpos)
-	#print("comparing ", dis1, " ", dis2, " ", pos1, " ", pos2, " against ", centerpos)
-	return dis1 > dis2
 
 
 func get_block(global_block_pos: Vector3) -> int:
