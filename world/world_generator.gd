@@ -53,7 +53,6 @@ func _threaded_generation() -> void:
 							index * ChunkData.BYTES_PER_BLOCK, block)
 
 		if is_instance_valid(_generating_chunk):
-			_generating_chunk.load_step = Chunk.LoadSteps.MESH_GENNED
 			_generating_chunk._generation_thread_finished.call_deferred()
 		_generating_chunk = null
 		_generating_chunk_data = null
@@ -81,13 +80,16 @@ func _check_queue() -> void:
 
 
 func get_block_at(global_position: Vector3) -> int:
-	if (global_position.y
-		< (sin(global_position.x * 0.1) * cos(global_position.z * 0.1) * 16.0
-		+ cos(global_position.x * 0.001) * sin(global_position.z * 0.001) * 500)
-	):
-		return randi_range(1, 3)
-	if (cos(global_position.x * 0.001) * 100 + sin((global_position.z - 1500) * 0.001) * 100 < -150):
+	if (cos((global_position.x + 410) * 0.01) * 100 + sin(global_position.z * 0.01) * 100 < -110):
 		return 2
+	var ypos := int((sin(global_position.x * 0.1) * cos(global_position.z * 0.1) * 16.0
+		+ cos(global_position.x * 0.001) * sin(global_position.z * 0.001) * 500))
+	if global_position.y == ypos:
+		return 3
+	if (global_position.y < ypos - 3):
+		return 1
+	elif global_position.y < ypos:
+		return 2 if randf() < 0.5 else 1
 	return 0
 
 

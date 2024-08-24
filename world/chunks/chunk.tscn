@@ -35,4 +35,5 @@ mesh = SubResource("BoxMesh_a704f")
 
 [node name="ChunkDebugInfo" parent="." node_paths=PackedStringArray("chunk") instance=ExtResource("3_tckht")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 8, 8)
+visible = false
 chunk = NodePath("..")

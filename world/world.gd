@@ -67,22 +67,20 @@ func _update_loaded_chunks() -> void:
 		var chunk := chunks.get(pos, null) as Chunk
 		if not is_instance_valid(chunk):
 			continue
-		if chunk.load_step > Chunk.LoadSteps.BLOCKS_GENNED:
+		if chunk.load_step != Chunk.LoadSteps.BLOCKS_GENNED:
 			continue
 
-		var can_gen_mesh := true
+		var has_all_edges := true
 		for npos in NEIGHBOUR_ADDS:
 			var chunk_at: Chunk = chunks.get(pos + npos, null)
 			if not is_instance_valid(chunk_at) or chunk_at.load_step < Chunk.LoadSteps.BLOCKS_GENNED:
-				can_gen_mesh = false
-				#print(("chunk invalid") if not is_instance_valid(chunk_at)
-						#else str("mesh gen error: neighbor ", chunk_at.load_step,
-						#" / ", is_instance_valid(chunk_at)))
+				has_all_edges = false
 				break
-		if not can_gen_mesh:
+		if not has_all_edges:
+			chunk.make_mesh(null)
 			continue
 		#await get_tree().process_frame
-		chunk.make_mesh()
+		chunk.make_mesh(self)
 
 	# adding new chunks to be loaded.
 	for pos in poses_to_load:

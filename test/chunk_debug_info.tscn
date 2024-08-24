@@ -10,9 +10,3 @@ render_priority = 2
 text = "aiuiuauiua"
 font_size = 8
 script = ExtResource("1_gtdrb")
-
-[node name="Timer" type="Timer" parent="."]
-wait_time = 2.0
-autostart = true
-
-[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

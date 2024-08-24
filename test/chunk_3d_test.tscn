@@ -48,14 +48,6 @@ environment = SubResource("Environment_sejph")
 transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
 shadow_enabled = true
 
-[node name="ChunkLoader" type="Node3D" parent="."]
-script = ExtResource("2_0dstt")
-load_distance = 8
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="ChunkLoader"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)
-mesh = SubResource("BoxMesh_dq0e5")
-
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.9502, 18.7446, 28.0943)
 script = ExtResource("1_8mts2")
@@ -64,8 +56,17 @@ script = ExtResource("1_8mts2")
 shadow_enabled = true
 omni_range = 12.0
 
+[node name="ChunkLoader" type="Node3D" parent="Camera3D"]
+script = ExtResource("2_0dstt")
+load_distance = 8
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Camera3D/ChunkLoader"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)
+visible = false
+mesh = SubResource("BoxMesh_dq0e5")
+
 [node name="World" parent="." node_paths=PackedStringArray("chunk_loaders") instance=ExtResource("2_3n2ij")]
-chunk_loaders = [NodePath("../ChunkLoader")]
+chunk_loaders = [NodePath("../Camera3D/ChunkLoader")]
 
 [node name="DebugUi" parent="." node_paths=PackedStringArray("camera") instance=ExtResource("4_b72s5")]
 camera = NodePath("../Camera3D")

@@ -71,7 +71,7 @@ func __builtin_generation() -> void:
 	print("chunkgen took ", Time.get_ticks_msec() - time)
 
 
-func make_mesh() -> void:
+func make_mesh(world: World = null) -> void:
 	#mesh.call_deferred("create_mesh", data)
 	if data.block_data.is_empty():
 		return
