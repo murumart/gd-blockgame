@@ -18,6 +18,8 @@ func _init() -> void:
 func generate_mesh(mi: ChunkMesh, w: World, cd: ChunkData) -> bool:
 	if active:
 		return false
+	if _current_mesh_instance == mi:
+		return false
 	_current_mesh_instance = mi
 	_current_chunk_data = cd
 	_current_world = w
@@ -34,7 +36,7 @@ func _threaded_meshing() -> void:
 		#print("-- MESH genning")
 
 		var mesh := ArrayMesh.new()
-		ChunkMeshThread.create_mesh(
+		create_mesh(
 				mesh, _current_chunk_data, _current_world, _current_global_position)
 		if is_instance_valid(_current_mesh_instance):
 			_current_mesh_instance._mesh_thread_finished.call_deferred(mesh)
@@ -45,7 +47,7 @@ func _threaded_meshing() -> void:
 		active = false
 
 
-static func create_mesh(
+func create_mesh(
 		mesh: ArrayMesh,
 		chunk_data: ChunkData,
 		world: World,
@@ -64,7 +66,7 @@ static func create_mesh(
 	print("meshgen took ", Time.get_ticks_msec() - time)
 
 
-static func _create_mesh_data_array(
+func _create_mesh_data_array(
 		chunk_data: ChunkData,
 		world: World,
 		global_position: Vector3) -> Array:
@@ -89,7 +91,7 @@ static func _create_mesh_data_array(
 	return mesh_array
 
 
-static func _add_block_mesh(block_position: Vector3,
+func _add_block_mesh(block_position: Vector3,
 		mesh_array: Array,
 		vertex_count: PackedInt32Array,
 		chunk_data: ChunkData,
@@ -149,7 +151,7 @@ static func _add_block_mesh(block_position: Vector3,
 		_add_face_data(Vector3.UP, vertex_count, mesh_array, block_type)
 
 
-static func _is_side_visible(
+func _is_side_visible(
 		data: ChunkData,
 		block_position: Vector3,
 		side: Vector3,
@@ -174,7 +176,7 @@ static func _is_side_visible(
 	return true
 
 
-static func _add_face_data(
+func _add_face_data(
 		normal_direction: Vector3,
 		vertex_count: PackedInt32Array,
 		mesh_array: Array,

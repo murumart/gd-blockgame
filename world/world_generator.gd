@@ -18,9 +18,7 @@ func _init() -> void:
 
 func start_generating(_chunk: Chunk) -> void:
 	if active:
-		print("anna add")
 		if _queue.size() >= MAX_QUEUE_SIZE:
-			print("quue fule")
 			return
 		_queue.append(_chunk)
 		#print("-- gque: add chunk ", _chunk.name)

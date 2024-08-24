@@ -67,7 +67,9 @@ func _update_loaded_chunks() -> void:
 		var chunk := chunks.get(pos, null) as Chunk
 		if not is_instance_valid(chunk):
 			continue
-		if chunk.load_step != Chunk.LoadSteps.BLOCKS_GENNED:
+		if chunk.load_step < Chunk.LoadSteps.BLOCKS_GENNED:
+			continue
+		if chunk.load_step >= Chunk.LoadSteps.MESH_GENNING:
 			continue
 
 		var has_all_edges := true
@@ -88,7 +90,6 @@ func _update_loaded_chunks() -> void:
 		load_chunk(pos)
 
 	# unload chunks that don't are loaded should
-	return
 	const MAX_DELETIONS := 2
 	var i := 0
 	for pos: Vector3 in chunks.keys():
@@ -113,9 +114,16 @@ func _get_chunk_poses_to_load() -> PackedVector3Array:
 			#toreturn.append_array(
 					#WorldGenerator.get_diamond(Vector3(chunk_pos.x, y, chunk_pos.z),
 					#loader.load_distance - dist))
+		toreturn.append(chunk_pos)
+		toreturn.append(chunk_pos + Vector3.LEFT)
+		toreturn.append(chunk_pos + Vector3.FORWARD)
+		toreturn.append(chunk_pos + Vector3.RIGHT)
+		toreturn.append(chunk_pos + Vector3.BACK)
+		toreturn.append(chunk_pos + Vector3.DOWN)
+		toreturn.append(chunk_pos + Vector3.UP)
 		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos, loader.load_distance))
-		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos + Vector3.UP, loader.load_distance - 3))
 		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos + Vector3.DOWN, loader.load_distance - 3))
+		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos + Vector3.UP, loader.load_distance - 3))
 	return toreturn
 
 

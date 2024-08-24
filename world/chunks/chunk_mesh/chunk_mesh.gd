@@ -25,6 +25,7 @@ static var chunk_mesh_threads: Array[ChunkMeshThread] = [
 	#ChunkMeshThread.new(),
 	#ChunkMeshThread.new(),
 ]
+var worldless_mesh := true
 
 
 func create_mesh(chunk_data: ChunkData, world: World) -> void:
@@ -34,11 +35,11 @@ func create_mesh(chunk_data: ChunkData, world: World) -> void:
 
 
 func create_mesh_thread(chunk_data: ChunkData, world: World) -> bool:
-	return chunk_mesh_threads[0].generate_mesh(self, world, chunk_data)
-	#for thread in chunk_mesh_threads:
-		#if thread.generate_mesh(self, world, chunk_data):
-			#return true
-	#return false
+	#return chunk_mesh_threads[0].generate_mesh(self, world, chunk_data)
+	for thread in chunk_mesh_threads:
+		if thread.generate_mesh(self, world, chunk_data):
+			return true
+	return false
 
 
 func _mesh_thread_finished(new_mesh: ArrayMesh) -> void:
