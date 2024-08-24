@@ -1,8 +1,9 @@
-[gd_scene load_steps=11 format=3 uid="uid://klx8164wmk5q"]
+[gd_scene load_steps=13 format=3 uid="uid://klx8164wmk5q"]
 
 [ext_resource type="Script" path="res://addons/simple_free_look_camera/camera.gd" id="1_8mts2"]
 [ext_resource type="Script" path="res://world/chunks/chunk_loader.gd" id="2_0dstt"]
 [ext_resource type="PackedScene" uid="uid://xv0bwgrtwil2" path="res://world/world.tscn" id="2_3n2ij"]
+[ext_resource type="Script" path="res://world/generation/generator_settings.gd" id="4_2dq6k"]
 [ext_resource type="PackedScene" uid="uid://bl3q0dsg4sfcr" path="res://test/debug_ui.tscn" id="4_b72s5"]
 
 [sub_resource type="GDScript" id="GDScript_tfr6n"]
@@ -38,6 +39,9 @@ shading_mode = 0
 material = SubResource("StandardMaterial3D_l88ll")
 size = Vector3(1, 10, 1)
 
+[sub_resource type="Resource" id="Resource_xh5lt"]
+script = ExtResource("4_2dq6k")
+
 [node name="Chunk3dTest" type="Node3D"]
 script = SubResource("GDScript_tfr6n")
 
@@ -48,6 +52,15 @@ environment = SubResource("Environment_sejph")
 transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
 shadow_enabled = true
 
+[node name="ChunkLoader" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.4139, 2.42087, 26.3131)
+script = ExtResource("2_0dstt")
+load_distance = 16
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="ChunkLoader"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)
+mesh = SubResource("BoxMesh_dq0e5")
+
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.9502, 18.7446, 28.0943)
 script = ExtResource("1_8mts2")
@@ -56,17 +69,10 @@ script = ExtResource("1_8mts2")
 shadow_enabled = true
 omni_range = 12.0
 
-[node name="ChunkLoader" type="Node3D" parent="Camera3D"]
-script = ExtResource("2_0dstt")
-load_distance = 11
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Camera3D/ChunkLoader"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)
-visible = false
-mesh = SubResource("BoxMesh_dq0e5")
-
 [node name="World" parent="." node_paths=PackedStringArray("chunk_loaders") instance=ExtResource("2_3n2ij")]
-chunk_loaders = [NodePath("../Camera3D/ChunkLoader")]
+chunk_loaders = [NodePath("../ChunkLoader")]
+generator_settings = SubResource("Resource_xh5lt")
 
-[node name="DebugUi" parent="." node_paths=PackedStringArray("camera") instance=ExtResource("4_b72s5")]
+[node name="DebugUi" parent="." node_paths=PackedStringArray("camera", "world") instance=ExtResource("4_b72s5")]
 camera = NodePath("../Camera3D")
+world = NodePath("../World")

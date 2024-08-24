@@ -1,6 +1,6 @@
 class_name WorldGenerator extends Node
 
-const MAX_QUEUE_SIZE := 512
+const MAX_QUEUE_SIZE := 512124317241
 
 var _thread := Thread.new()
 var _semaph := Semaphore.new()
@@ -11,9 +11,11 @@ var _generating_chunk: Chunk
 var _generating_chunk_position: Vector3
 var _generating_chunk_data: ChunkData
 
+var _settings: GeneratorSettings
+
 
 func _init() -> void:
-	_thread.start(_threaded_generation)
+	_thread.start(_threaded_generation, Thread.PRIORITY_HIGH)
 
 
 func start_generating(_chunk: Chunk) -> void:
@@ -59,7 +61,8 @@ func _threaded_generation() -> void:
 
 
 func _process(delta: float) -> void:
-	_check_queue()
+	for x in 30:
+		_check_queue()
 
 
 func _check_queue() -> void:
@@ -78,17 +81,18 @@ func _check_queue() -> void:
 
 
 func get_block_at(global_position: Vector3) -> int:
-	if (cos((global_position.x + 410) * 0.01) * 100 + sin(global_position.z * 0.01) * 100 < -110):
-		return 2
-	var ypos := int((sin(global_position.x * 0.1) * cos(global_position.z * 0.1) * 16.0
-		+ cos(global_position.x * 0.001) * sin(global_position.z * 0.001) * 500))
-	if global_position.y == ypos:
-		return 3
-	if (global_position.y < ypos - 3):
-		return 1
-	elif global_position.y < ypos:
-		return 2 if randf() < 0.5 else 1
-	return 0
+	return _settings.get_block_at(global_position)
+	#if (cos((global_position.x + 410) * 0.01) * 100 + sin(global_position.z * 0.01) * 100 < -110):
+		#return 2
+	#var ypos := int((sin(global_position.x * 0.1) * cos(global_position.z * 0.1) * 16.0
+		#+ cos(global_position.x * 0.001) * sin(global_position.z * 0.001) * 500))
+	#if global_position.y == ypos:
+		#return 3
+	#if (global_position.y < ypos - 3):
+		#return 1
+	#elif global_position.y < ypos:
+		#return 2 if randf() < 0.5 else 1
+	#return 0
 
 
 func _exit_tree() -> void:

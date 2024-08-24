@@ -171,6 +171,7 @@ func _is_side_visible(
 		check_block_type = BlockTypes.get_block(check_block_id)
 	else:
 		check_block_type = data.get_block_type_from_pos(check_position)
+	assert(is_instance_valid(check_block_type))
 	if check_block_type.mesh_type != BlockType.MeshType.NONE:
 		return false
 	return true

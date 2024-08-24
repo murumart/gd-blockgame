@@ -5,10 +5,13 @@ extends Label3D
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_page_up"):
-		do_text()
 		show()
 	elif event.is_action_pressed("ui_page_down"):
 		hide()
+
+
+func _process(delta: float) -> void:
+	do_text()
 
 
 func do_text() -> void:
