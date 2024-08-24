@@ -13,6 +13,7 @@ const SIDE_CHECKS: PackedVector3Array = [
 	Vector3.UP,
 ]
 enum SIDES {NORTH, SOUTH, WEST, EAST, BOTTOM, TOP}
+static var DEFAULT_BLOCK_DATA: PackedByteArray = []
 
 var block_data := PackedByteArray()
 
@@ -22,13 +23,11 @@ func clear_block_data() -> void:
 
 
 func init_block_data() -> void:
-	block_data.resize(BLOCK_DATA_SIZE)
-	for x in BLOCKS_IN_CHUNK:
-		set_block_at(x, 3)
+	block_data = DEFAULT_BLOCK_DATA.duplicate()
 
 
 func set_block_at(idx: int, data: int) -> void:
-	assert(data < 0xFFFF, "block overflow")
+	#assert(data < 0xFFFF, "block overflow")
 	idx *= BYTES_PER_BLOCK
 	if block_data.size() == BYTES_PER_BLOCK and data != get_block_at(0):
 		init_block_data()
@@ -51,6 +50,12 @@ func set_single_block_type(data: int) -> void:
 
 func get_block_type_from_pos(pos: Vector3) -> BlockType:
 	return BlockTypes.get_block(get_block_at(ChunkData.pos_to_index(pos)))
+
+
+static func _static_init() -> void:
+	DEFAULT_BLOCK_DATA.resize(BLOCK_DATA_SIZE)
+	for x in BLOCKS_IN_CHUNK:
+		DEFAULT_BLOCK_DATA.encode_u16(x * BYTES_PER_BLOCK, 3)
 
 
 static func pos_to_index(pos: Vector3) -> int:

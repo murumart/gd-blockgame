@@ -22,8 +22,12 @@ var chunks := {}
 
 
 func _ready() -> void:
-	_chunk_loader_timer.timeout.connect(_update_loaded_chunks)
+	#_chunk_loader_timer.timeout.connect(_update_loaded_chunks)
 	start_generation()
+
+
+func _process(delta: float) -> void:
+	_update_loaded_chunks()
 
 
 func start_generation() -> void:
@@ -50,7 +54,10 @@ func _on_chunk_gen_requested(chunk: Chunk) -> void:
 
 
 func unload_chunk(chunk_pos: Vector3) -> void:
-	pass
+	var chunk: Chunk = chunks[chunk_pos]
+	chunk.load_step = Chunk.LoadSteps.DELETING
+	chunks.erase(chunk_pos)
+	chunk.queue_free()
 
 
 func _update_loaded_chunks() -> void:
@@ -82,8 +89,20 @@ func _update_loaded_chunks() -> void:
 		#await get_tree().process_frame
 		load_chunk(pos)
 
+	# unload chunks that don't are loaded should
+	return
+	const MAX_DELETIONS := 2
+	var i := 0
+	for pos: Vector3 in chunks.keys():
+		if pos not in poses_to_load:
+			unload_chunk(pos)
+			i += 1
+			if i >= MAX_DELETIONS:
+				break
+
 
 func _get_chunk_poses_to_load() -> PackedVector3Array:
+	var time := Time.get_ticks_msec()
 	var toreturn: PackedVector3Array = []
 	for loader in chunk_loaders:
 		var chunk_pos := World.global_pos_to_chunk_pos(loader.global_position)
@@ -95,11 +114,12 @@ func _get_chunk_poses_to_load() -> PackedVector3Array:
 				for neighbor in NEIGHBOUR_ADDS:
 					j += 1
 					var new := pos + neighbor
-					if new in poses_to_load or new in temp:
+					if (new in poses_to_load or new in temp):
 						continue
 					temp.append(new)
 			poses_to_load.append_array(temp)
 		toreturn.append_array(poses_to_load)
+	print("getting loadable chnks took ", Time.get_ticks_msec() - time, " ms")
 	return toreturn
 
 

@@ -29,14 +29,15 @@ func generate_mesh(mi: ChunkMesh, w: World, cd: ChunkData) -> bool:
 
 func _threaded_meshing() -> void:
 	while true:
-		print("-- MESH waiting")
+		#print("-- MESH waiting")
 		_semaph.wait()
-		print("-- MESH genning")
+		#print("-- MESH genning")
 
 		var mesh := ArrayMesh.new()
 		ChunkMeshThread.create_mesh(
 				mesh, _current_chunk_data, _current_world, _current_global_position)
-		_current_mesh_instance._mesh_thread_finished.call_deferred(mesh)
+		if is_instance_valid(_current_mesh_instance):
+			_current_mesh_instance._mesh_thread_finished.call_deferred(mesh)
 		_current_chunk_data = null
 		_current_global_position = Vector3.ZERO
 		_current_mesh_instance = null

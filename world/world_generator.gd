@@ -22,17 +22,17 @@ func start_generating(_chunk: Chunk) -> void:
 	_generating_chunk = _chunk
 	_generating_chunk_position = _chunk.global_position
 	_generating_chunk_data = _chunk.data
-	print("-- qgue: post chunk " + _chunk.name)
+	#print("-- qgue: post chunk " + _chunk.name)
 	active = true
 	_semaph.post()
 
 
 func _threaded_generation() -> void:
 	while true:
-		print("--- GEN waiting")
+		#print("--- GEN waiting")
 		_semaph.wait()
-		print("--- GEN starting with chunk at ",
-				World.global_pos_to_chunk_pos(_generating_chunk_position))
+		#print("--- GEN starting with chunk at ",
+				#World.global_pos_to_chunk_pos(_generating_chunk_position))
 		assert(is_instance_valid(_generating_chunk))
 
 		for y in Chunk.SIZE.y:
@@ -46,8 +46,9 @@ func _threaded_generation() -> void:
 					_generating_chunk_data.block_data.encode_u16(
 							index * ChunkData.BYTES_PER_BLOCK, block)
 
-		_generating_chunk.load_step = Chunk.LoadSteps.MESH_GENNED
-		_generating_chunk._generation_thread_finished.call_deferred()
+		if is_instance_valid(_generating_chunk):
+			_generating_chunk.load_step = Chunk.LoadSteps.MESH_GENNED
+			_generating_chunk._generation_thread_finished.call_deferred()
 		_generating_chunk = null
 		_generating_chunk_data = null
 		_generating_chunk_position = Vector3(0, 1, 0)
@@ -59,12 +60,15 @@ func _process(delta: float) -> void:
 
 
 func _check_queue() -> void:
-	if active:
+	if active or _queue.is_empty():
+		return
+	if not is_instance_valid(_queue[0]):
+		_queue.remove_at(0)
 		return
 	var first: Chunk = _queue.pop_front()
 	if not is_instance_valid(first):
 		return
-	print("-- gque: ", _queue.size())
+	#print("-- gque: ", _queue.size())
 	if first.load_step > 0:
 		return
 	start_generating(first)

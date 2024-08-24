@@ -9,6 +9,7 @@ enum LoadSteps {
 	BLOCKS_GENNED, ## Chunk has its blocks generated, but not mesh.
 	MESH_GENNING, ## Mesh is generating on the thread.
 	MESH_GENNED, ## Chunk has its mesh generated and is visible.
+	DELETING, ## Chunk is queued for deletion.
 }
 
 const SIZE := Vector3i(16, 16, 16) ## The size of a chunk.
@@ -38,8 +39,7 @@ func generate() -> void:
 
 func _generation_thread_finished() -> void:
 	load_step = LoadSteps.BLOCKS_GENNED
-	print("generation of ", name, " finished. ")
-	assert(not data.block_data.is_empty())
+	#print("generation of ", name, " finished. ")
 
 
 func __builtin_generation() -> void:
