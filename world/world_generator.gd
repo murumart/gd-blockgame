@@ -1,5 +1,7 @@
 class_name WorldGenerator extends Node
 
+const MAX_QUEUE_SIZE := 512
+
 var _thread := Thread.new()
 var _semaph := Semaphore.new()
 var _queue: Array[Chunk]
@@ -16,6 +18,10 @@ func _init() -> void:
 
 func start_generating(_chunk: Chunk) -> void:
 	if active:
+		print("anna add")
+		if _queue.size() >= MAX_QUEUE_SIZE:
+			print("quue fule")
+			return
 		_queue.append(_chunk)
 		#print("-- gque: add chunk ", _chunk.name)
 		return
@@ -80,7 +86,7 @@ func get_block_at(global_position: Vector3) -> int:
 		+ cos(global_position.x * 0.001) * sin(global_position.z * 0.001) * 500)
 	):
 		return randi_range(1, 3)
-	if (cos(global_position.x * 0.001) * 100 + sin(global_position.z * 0.001) * 100 < 69):
+	if (cos(global_position.x * 0.001) * 100 + sin((global_position.z - 1500) * 0.001) * 100 < -150):
 		return 2
 	return 0
 
@@ -88,3 +94,29 @@ func get_block_at(global_position: Vector3) -> int:
 func _exit_tree() -> void:
 	_semaph.post()
 	_thread.wait_to_finish()
+
+
+static func get_diamond(start: Vector3, side_len: int) -> PackedVector3Array:
+	var toreturn: PackedVector3Array = [start]
+	var start_positions: PackedVector3Array = []
+	start_positions.resize(side_len)
+	for i in side_len:
+		start_positions[i] = start + Vector3.LEFT * (i + 1)
+
+	var addition := Vector3(1, 0, 1)
+	var cursor := start + Vector3.LEFT
+
+	toreturn.append(cursor)
+	for i in 200:
+		var added := cursor + addition
+		if added in start_positions:
+			if added == start_positions[side_len - 1]:
+				break
+			cursor.x -= 1
+		cursor += addition
+		toreturn.append(cursor)
+		if cursor.z == start.z:
+			addition.x *= -1
+		if cursor.x == start.x:
+			addition.z *= -1
+	return toreturn

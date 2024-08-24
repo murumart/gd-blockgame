@@ -23,22 +23,27 @@ var world: World
 
 @export var mesh: ChunkMesh
 
+var _history := {}
+
 
 func _ready() -> void:
 	$BoundingBox.hide()
 	mesh.meshing_finished.connect(func() -> void:
 		load_step = LoadSteps.MESH_GENNED
+		_history[Engine.get_process_frames()] = "finished mesh generation"
 	)
 
 
 func generate() -> void:
 	data.clear_block_data()
 	data.init_block_data()
+	_history[Engine.get_process_frames()] = "requesting block generation"
 	block_gen_requested.emit(self)
 
 
 func _generation_thread_finished() -> void:
 	load_step = LoadSteps.BLOCKS_GENNED
+	_history[Engine.get_process_frames()] = "block generation finished"
 	#print("generation of ", name, " finished. ")
 
 

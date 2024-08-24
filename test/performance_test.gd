@@ -8,6 +8,19 @@ const V111 := Vector3(1, 1, 1)
 
 func _ready() -> void:
 	_perf_test()
+	var diamond := WorldGenerator.get_diamond(Vector3.ZERO, 18)
+	print(diamond)
+	draw.connect(func() -> void:
+		var color := Color.RED
+		const ADD := Vector2(70, 60)
+		const SIZE := Vector2(6, 6)
+		for pos in diamond:
+			var vec2 := Vector2(pos.x, -pos.z) + ADD
+			draw_rect(Rect2(vec2 * SIZE, SIZE), color)
+			color.h += 0.01
+	)
+	#get_diamond(Vector3.ZERO, 3)
+	queue_redraw()
 
 
 func _perf_test() -> void:
@@ -180,3 +193,34 @@ func pos_to_index(pos: Vector3) -> int:
 			pos.y
 			+ pos.z * Chunk.SIZE.y
 			+ pos.x * Chunk.SIZE.z * Chunk.SIZE.y)
+
+
+var vectors := PackedVector3Array()
+func get_diamond(start: Vector3, side_len: int) -> void:
+	vectors.append(start)
+	var start_positions: PackedVector3Array = []
+	start_positions.resize(side_len)
+	for i in side_len:
+		start_positions[i] = start + Vector3.LEFT * (i + 1)
+
+	var addition := Vector3(1, 0, 1)
+	var cursor := start + Vector3.LEFT
+
+	vectors.append(cursor)
+	for i in 100:
+		print("bstep: ", cursor, " ", addition)
+		var added := cursor + addition
+		if added in start_positions:
+			if added == start_positions[side_len - 1]:
+				print("done")
+				break
+			cursor.x -= 1
+		cursor += addition
+		vectors.append(cursor)
+		if cursor.z == start.z:
+			addition.x *= -1
+		if cursor.x == start.x:
+			addition.z *= -1
+		print("astep: ", cursor, " ", addition, "\n")
+		queue_redraw()
+		await get_tree().create_timer(0.5).timeout
