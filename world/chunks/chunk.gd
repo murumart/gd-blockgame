@@ -12,7 +12,7 @@ enum LoadSteps {
 	DELETING, ## Chunk is queued for deletion.
 }
 
-const SIZE := Vector3i(16, 16, 16) ## The size of a chunk.
+const SIZE := Vector3i(16, 32, 16) ## The size of a chunk.
 
 var data := ChunkData.new() ## Stores the chunk's block data.
 
@@ -22,6 +22,7 @@ var load_step: LoadSteps
 var world: World
 
 @export var mesh: ChunkMesh
+@export var fog: Node3D
 
 var _history := {}
 

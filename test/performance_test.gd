@@ -24,7 +24,7 @@ func _ready() -> void:
 
 
 func _perf_test() -> void:
-	pass
+	_chunk_pos_comparison()
 
 
 ## 1000*16*16*16 loops, no consts: 17336, with consts: 17370.
@@ -224,3 +224,40 @@ func get_diamond(start: Vector3, side_len: int) -> void:
 		print("astep: ", cursor, " ", addition, "\n")
 		queue_redraw()
 		await get_tree().create_timer(0.5).timeout
+
+
+## time 1: 1076; time 2: 826
+func _chunk_pos_comparison() -> void:
+	const LOOPS := 1000
+	const BOX_SIZE := 10
+	var time_1 := 0
+	var time_2 := 0
+	var time := 0
+	var arr_1 := []
+	var arr_2 := []
+
+	time = Time.get_ticks_msec()
+	for i in LOOPS:
+		for x in BOX_SIZE: for y in BOX_SIZE: for z in BOX_SIZE:
+			var pos := Vector3(x, y, z)
+			arr_1.append(global_pos_to_chunk_pos_1(pos))
+	time_1 = Time.get_ticks_msec() - time
+	time = Time.get_ticks_msec()
+	for i in LOOPS:
+		for x in BOX_SIZE: for y in BOX_SIZE: for z in BOX_SIZE:
+			var pos := Vector3(x, y, z)
+			arr_2.append(global_pos_to_chunk_pos_2(pos))
+	time_2 = Time.get_ticks_msec() - time
+	print("time 1: ", time_1, "; time 2: ", time_2)
+	print("arrays equal: ", arr_1 == arr_2)
+
+
+func global_pos_to_chunk_pos_1(global_pos: Vector3) -> Vector3:
+	var x := floori(global_pos.x / Chunk.SIZE.x)
+	var y := floori(global_pos.y / Chunk.SIZE.y)
+	var z := floori(global_pos.z / Chunk.SIZE.z)
+	return Vector3(x, y, z)
+
+
+func global_pos_to_chunk_pos_2(global_pos: Vector3) -> Vector3:
+	return (global_pos / Vector3(Chunk.SIZE)).floor()

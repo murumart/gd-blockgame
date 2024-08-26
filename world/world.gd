@@ -25,6 +25,8 @@ var chunks := {}
 func _ready() -> void:
 	#_chunk_loader_timer.timeout.connect(_update_loaded_chunks)
 	_start_generation()
+	for loader in chunk_loaders:
+		loader.changed_chunk.connect(world_generator.recalculate_visible_chunk_positions.unbind(1))
 
 
 func _process(delta: float) -> void:
@@ -56,7 +58,7 @@ func unload_chunk(chunk_pos: Vector3) -> void:
 
 
 func _update_loaded_chunks() -> void:
-	var poses_to_load := world_generator.get_chunk_poses_to_load_sorted()
+	var poses_to_load := world_generator.visible_chunk_positions
 	# generating meshes
 	for pos in poses_to_load:
 		var chunk := chunks.get(pos, null) as Chunk
@@ -91,7 +93,7 @@ func _update_loaded_chunks() -> void:
 			#break
 
 	# unload chunks that don't are loaded should
-	const MAX_DELETIONS := 2
+	const MAX_DELETIONS := 8
 	var i := 0
 	for pos: Vector3 in chunks.keys():
 		if pos not in poses_to_load:
@@ -113,7 +115,4 @@ func get_block(global_block_pos: Vector3) -> int:
 
 
 static func global_pos_to_chunk_pos(global_pos: Vector3) -> Vector3:
-	var x := floori(global_pos.x / Chunk.SIZE.x)
-	var y := floori(global_pos.y / Chunk.SIZE.y)
-	var z := floori(global_pos.z / Chunk.SIZE.z)
-	return Vector3i(x, y, z)
+	return (global_pos / Vector3(Chunk.SIZE)).floor()
