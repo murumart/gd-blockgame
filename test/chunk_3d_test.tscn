@@ -1,11 +1,11 @@
-[gd_scene load_steps=15 format=3 uid="uid://klx8164wmk5q"]
+[gd_scene load_steps=14 format=3 uid="uid://klx8164wmk5q"]
 
 [ext_resource type="Script" path="res://addons/simple_free_look_camera/camera.gd" id="1_8mts2"]
 [ext_resource type="Script" path="res://world/chunks/chunk_loader.gd" id="2_0dstt"]
 [ext_resource type="PackedScene" uid="uid://xv0bwgrtwil2" path="res://world/world.tscn" id="2_3n2ij"]
 [ext_resource type="Script" path="res://world/blocks/collision/block_collision_maker.gd" id="3_pytwc"]
-[ext_resource type="Script" path="res://world/generation/random_blicks.gd" id="3_pyxej"]
 [ext_resource type="PackedScene" uid="uid://bl3q0dsg4sfcr" path="res://test/debug_ui.tscn" id="4_b72s5"]
+[ext_resource type="Resource" uid="uid://ce06k7h07v0sq" path="res://test/test_gen_1.tres" id="4_r4sia"]
 [ext_resource type="PackedScene" uid="uid://mnjblgt5ek5" path="res://world/player/player.tscn" id="6_c0nql"]
 
 [sub_resource type="GDScript" id="GDScript_tfr6n"]
@@ -40,14 +40,11 @@ fog_sun_scatter = 0.07
 fog_density = 1.0
 fog_sky_affect = 0.674
 fog_height = 64.0
-fog_height_density = -14.75
+fog_height_density = 6.008
 fog_depth_curve = 0.378929
 fog_depth_begin = 32.0
 fog_depth_end = 64.0
 volumetric_fog_density = 0.02
-
-[sub_resource type="Resource" id="Resource_kmwo3"]
-script = ExtResource("3_pyxej")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l88ll"]
 shading_mode = 0
@@ -75,16 +72,21 @@ visible = false
 shadow_enabled = true
 omni_range = 12.0
 
+[node name="ChunkLoader" type="Node3D" parent="Camera3D"]
+script = ExtResource("2_0dstt")
+load_distance = 24
+enabled = false
+
 [node name="World" parent="." node_paths=PackedStringArray("chunk_loaders") instance=ExtResource("2_3n2ij")]
-chunk_loaders = [NodePath("../Player/ChunkLoader")]
-generator_settings = SubResource("Resource_kmwo3")
+chunk_loaders = [NodePath("../Player/ChunkLoader"), NodePath("../Camera3D/ChunkLoader")]
+generator_settings = ExtResource("4_r4sia")
 
 [node name="DebugUi" parent="." node_paths=PackedStringArray("camera", "world") instance=ExtResource("4_b72s5")]
 camera = NodePath("../Player/CameraPivot/Camera3D")
 world = NodePath("../World")
 
 [node name="Player" parent="." instance=ExtResource("6_c0nql")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 512, 18)
 
 [node name="BlockCollisionMaker" type="Node3D" parent="Player" node_paths=PackedStringArray("world")]
 script = ExtResource("3_pytwc")

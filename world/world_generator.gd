@@ -81,22 +81,13 @@ func _process_chunks() -> void:
 
 func get_block_at(global_position: Vector3) -> int:
 	return _settings.get_block_at(global_position)
-	#if (cos((global_position.x + 410) * 0.01) * 100 + sin(global_position.z * 0.01) * 100 < -110):
-		#return 2
-	#var ypos := int((sin(global_position.x * 0.1) * cos(global_position.z * 0.1) * 16.0
-		#+ cos(global_position.x * 0.001) * sin(global_position.z * 0.001) * 500))
-	#if global_position.y == ypos:
-		#return 3
-	#if (global_position.y < ypos - 3):
-		#return 1
-	#elif global_position.y < ypos:
-		#return 2 if randf() < 0.5 else 1
-	#return 0
 
 
 func _get_chunk_poses_to_load() -> Array[Vector3]:
 	var toreturn: Array[Vector3] = []
 	for loader in _world.chunk_loaders:
+		if not loader.enabled:
+			continue
 		var chunk_pos := World.global_pos_to_chunk_pos(loader.global_position)
 		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos, loader.load_distance))
 		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos + Vector3.DOWN, loader.load_distance - 3))
@@ -107,7 +98,11 @@ func _get_chunk_poses_to_load() -> Array[Vector3]:
 func get_chunk_poses_to_load_sorted() -> PackedVector3Array:
 	var time := Time.get_ticks_msec()
 	var toreturn: Array[Vector3] = _get_chunk_poses_to_load()
-	var chunk_pos := World.global_pos_to_chunk_pos(_world.chunk_loaders[0].global_position)
+	var chunk_pos: Vector3
+	for loader in _world.chunk_loaders:
+		if not loader.enabled:
+			continue
+		chunk_pos = World.global_pos_to_chunk_pos(loader.global_position)
 	toreturn.sort_custom(_sort_poses_by_distance_from_loader.bind(chunk_pos))
 	#print("getting loadable chnks took ", Time.get_ticks_msec() - time, " ms")
 	return toreturn

@@ -3,6 +3,7 @@ class_name BlockTypes
 ## Stores block types.
 
 const INVALID_BLOCK_ID := -1
+const AIR := 0
 
 static var _array: Array[BlockType] = [
 	preload("res://world/blocks/default_blocks/empty.tres"),
