@@ -22,7 +22,7 @@ func _ready() -> void:
 "
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_hhte1"]
-sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+sky_horizon_color = Color(0.824322, 0.830002, 0.838974, 1)
 ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
 
 [sub_resource type="Sky" id="Sky_mg2k5"]
@@ -38,10 +38,8 @@ fog_mode = 1
 fog_light_color = Color(0.6, 0.745098, 0.913725, 1)
 fog_sun_scatter = 0.07
 fog_density = 1.0
-fog_sky_affect = 0.674
-fog_height = 64.0
-fog_height_density = 6.008
-fog_depth_curve = 0.378929
+fog_sky_affect = 0.5
+fog_depth_curve = 4.92457
 fog_depth_begin = 32.0
 fog_depth_end = 64.0
 volumetric_fog_density = 0.02
@@ -64,7 +62,7 @@ transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -
 shadow_enabled = true
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.9502, 18.7446, 28.0943)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.9502, 524.745, 28.0943)
 script = ExtResource("1_8mts2")
 
 [node name="OmniLight3D" type="OmniLight3D" parent="Camera3D"]
@@ -74,7 +72,7 @@ omni_range = 12.0
 
 [node name="ChunkLoader" type="Node3D" parent="Camera3D"]
 script = ExtResource("2_0dstt")
-load_distance = 24
+load_distance = 8
 enabled = false
 
 [node name="World" parent="." node_paths=PackedStringArray("chunk_loaders") instance=ExtResource("2_3n2ij")]
@@ -86,7 +84,7 @@ camera = NodePath("../Player/CameraPivot/Camera3D")
 world = NodePath("../World")
 
 [node name="Player" parent="." instance=ExtResource("6_c0nql")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 512, 18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 513, 18)
 
 [node name="BlockCollisionMaker" type="Node3D" parent="Player" node_paths=PackedStringArray("world")]
 script = ExtResource("3_pytwc")
@@ -95,7 +93,7 @@ world = NodePath("../../World")
 
 [node name="ChunkLoader" type="Node3D" parent="Player"]
 script = ExtResource("2_0dstt")
-load_distance = 16
+load_distance = 18
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Player/ChunkLoader"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)

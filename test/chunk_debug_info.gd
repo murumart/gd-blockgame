@@ -5,6 +5,7 @@ extends Label3D
 
 func _ready() -> void:
 	set_process(visible)
+	position = Chunk.SIZE * 0.5
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

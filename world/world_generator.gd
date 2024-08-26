@@ -90,8 +90,13 @@ func _get_chunk_poses_to_load() -> Array[Vector3]:
 			continue
 		var chunk_pos := World.global_pos_to_chunk_pos(loader.global_position)
 		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos, loader.load_distance))
-		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos + Vector3.DOWN, loader.load_distance - 3))
-		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos + Vector3.UP, loader.load_distance - 3))
+		var yrange := roundi(loader.load_distance / 8.0)
+		for y in range(-yrange, yrange + 1):
+			if y == 0:
+				continue
+			toreturn.append_array(WorldGenerator.get_diamond(
+					Vector3(chunk_pos.x, chunk_pos.y + y, chunk_pos.z),
+					maxi(loader.load_distance - absi(y) * 6, 1)))
 	return toreturn
 
 

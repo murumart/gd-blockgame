@@ -77,7 +77,7 @@ func _update_loaded_chunks() -> void:
 				has_all_edges = false
 				break
 		if not has_all_edges:
-			#chunk.make_mesh(null)
+			chunk.make_mesh(null)
 			continue
 		#await get_tree().process_frame
 		chunk.make_mesh(self)
