@@ -28,6 +28,8 @@ var _shift = false
 var _alt = false
 
 func _input(event):
+	if not current:
+		return
 	# Receives mouse motion
 	if event is InputEventMouseMotion:
 		_mouse_position = event.relative

@@ -27,6 +27,7 @@ func _ready() -> void:
 	_start_generation()
 	for loader in chunk_loaders:
 		loader.changed_chunk.connect(world_generator.recalculate_visible_chunk_positions.unbind(1))
+	world_generator.recalculate_visible_chunk_positions()
 
 
 func _process(delta: float) -> void:
