@@ -1,16 +1,24 @@
 extends CharacterBody3D
 
 const SPEED = 5.0
-const JUMP_VELOCITY = 8.0
-const GRAV_MULT := 2.5
 const MAX_FALL_SPEED := 60.0
+
+const JUMP_HEIGHT := 1.0
+
+const ACCELERATION := 24.0
+const FRICTION := 24.0
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var camera: Camera3D = $CameraPivot/Camera3D
 
+var jump_velocity := 0.0
+
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+	var grav := (-2.0 * JUMP_HEIGHT * SPEED**2.0)
+	jump_velocity = -grav * (1.0 / SPEED)
 
 
 func _input(event: InputEvent) -> void:
@@ -31,27 +39,34 @@ func _input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var on_floor := is_on_floor()
-	var friction := SPEED * int(on_floor)
-	# Add the gravity.
-	if not on_floor:
-		velocity += get_gravity() * delta * GRAV_MULT
-		velocity.y = maxf(minf(velocity.y, MAX_FALL_SPEED), -MAX_FALL_SPEED)
-
-	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
-	input_dir = input_dir.rotated(-camera_pivot.rotation.y)
-	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-	if direction:
-		velocity.x = move_toward(velocity.x, direction.x * SPEED, SPEED * delta * (friction + 0.5))
-		velocity.z = move_toward(velocity.z, direction.z * SPEED, SPEED * delta * (friction + 0.5))
-	else:
-		velocity.x = move_toward(velocity.x, 0, SPEED * delta * friction)
-		velocity.z = move_toward(velocity.z, 0, SPEED * delta * friction)
-
-	if Input.is_action_pressed("ui_accept") and on_floor:
-		velocity.y = JUMP_VELOCITY
-		if direction:
-			velocity.x *= 1.5
-			velocity.z *= 1.5
+	_movement(delta)
 
 	move_and_slide()
+
+
+# based on a queen of squiggles youtube tutorial series.
+func _movement(delta: float) -> void:
+	var on_floor := is_on_floor()
+	var gravity := get_gravity()
+	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	var target_velo := Vector3()
+	var forward := camera.global_basis.z
+	var right := camera.global_basis.x
+	var current_speed := SPEED
+	target_velo += camera.global_basis.x * input.x
+	target_velo += camera.global_basis.z * input.y
+	target_velo.y = 0.0
+	target_velo = target_velo.normalized() * current_speed
+	target_velo.y = velocity.y
+
+	var target_accel := ACCELERATION if input else FRICTION
+	velocity = velocity.move_toward(target_velo, target_accel * delta)
+
+	if not on_floor:
+		velocity += gravity * delta
+		velocity.y = clampf(velocity.y, -MAX_FALL_SPEED, MAX_FALL_SPEED)
+	else:
+		velocity.y = 0.0
+
+	if Input.is_action_pressed("jump") and on_floor and velocity.y <= 0.0:
+		velocity.y = jump_velocity
