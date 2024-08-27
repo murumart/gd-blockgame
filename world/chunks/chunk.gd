@@ -47,14 +47,21 @@ func _generation_thread_finished() -> void:
 	#print("generation of ", name, " finished. ")
 
 
-func make_mesh(_world: World = null) -> void:
+func make_mesh(_world: World = null, force := false) -> void:
 	#mesh.call_deferred("create_mesh", data)
 	if data.block_data.is_empty():
 		return
 	#mesh.create_mesh(data, world)
 	if mesh.create_mesh_thread(data, _world):
 		load_step = LoadSteps.MESH_GENNING
+		return
+	if force:
+		mesh.create_mesh(data, _world)
 
 
 func get_block_local(internal_pos: Vector3) -> int:
 	return data.get_block_at(ChunkData.pos_to_index(internal_pos))
+
+
+func set_block_local(internal_pos: Vector3, block: int) -> void:
+	data.set_block_at(ChunkData.pos_to_index(internal_pos), block)

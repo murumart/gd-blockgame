@@ -62,7 +62,7 @@ func create_mesh(
 		return
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_array)
 	mesh.surface_set_material(0, ChunkMesh.BLOCK_MATERIAL)
-	print("meshgen took ", Time.get_ticks_msec() - time)
+	#print("meshgen took ", Time.get_ticks_msec() - time)
 
 
 func _create_mesh_data_array(

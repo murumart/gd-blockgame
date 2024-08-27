@@ -40,8 +40,8 @@ fog_density = 1.0
 fog_aerial_perspective = 0.585
 fog_sky_affect = 0.5
 fog_depth_curve = 4.92457
-fog_depth_begin = 512.0
-fog_depth_end = 512.0
+fog_depth_begin = 48.0
+fog_depth_end = 64.0
 volumetric_fog_density = 0.1762
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vpnbl"]
@@ -92,8 +92,9 @@ mesh = SubResource("BoxMesh_gce2t")
 camera = NodePath("../Player/CameraPivot/Camera3D")
 world = NodePath("../World")
 
-[node name="Player" parent="." instance=ExtResource("6_c0nql")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1000, 0)
+[node name="Player" parent="." node_paths=PackedStringArray("world") instance=ExtResource("6_c0nql")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 550, 0)
+world = NodePath("../World")
 
 [node name="BlockCollisionMaker" type="Node3D" parent="Player" node_paths=PackedStringArray("world")]
 script = ExtResource("3_pytwc")

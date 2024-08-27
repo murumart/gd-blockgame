@@ -11,15 +11,17 @@ func _physics_process(_delta: float) -> void:
 
 
 func get_text() -> String:
+	var wpos := camera.global_position + world.world_position
 	var chunk_pos_old := World.world_pos_to_chunk_pos(camera.global_position)
 	var chunk_pos := World.world_pos_to_chunk_pos(camera.global_position + world.world_position)
 	return (
 			"fps: " + str(Engine.get_frames_per_second())
-			+ "\npos: " + str(camera.global_position)
+			+ "\ngpos: " + str(camera.global_position)
+			+ "\nwpos: " + str(wpos)
 			+ "\nchunk_pos_old: " + str(chunk_pos_old)
 			+ "\nchunk_pos: " + str(chunk_pos)
 			+ "\nworld_pos: " + str(world.world_position)
-			+ "\npos_in_chunk: " + str(camera.global_position.round() - chunk_pos * Vector3(Chunk.SIZE))
+			+ "\npos_in_chunk: " + str(wpos.round() - chunk_pos * Vector3(Chunk.SIZE))
 			+ "\nrecenter_region: " + str(recenterer._last_region_position)
 			#+ "\ngen_queue_size: " + str(world.world_generator._queue.size())
 	)

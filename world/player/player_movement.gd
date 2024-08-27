@@ -11,10 +11,13 @@ const FRICTION := 24.0
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var camera: Camera3D = $CameraPivot/Camera3D
 
+@export var world: World
+
 var jump_velocity := 0.0
 
 
 func _ready() -> void:
+	assert(is_instance_valid(world))
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 	var grav := (-2.0 * JUMP_HEIGHT * SPEED**2.0)
@@ -36,12 +39,35 @@ func _input(event: InputEvent) -> void:
 		Input.mouse_mode = (Input.MOUSE_MODE_VISIBLE
 				if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 				else Input.MOUSE_MODE_CAPTURED)
+	elif event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
+		var raycast := BlockRaycast.cast_ray(
+				camera.global_position, -camera.global_basis.z, world)
+		print(raycast)
+		if not raycast.failure:
+			world.set_block(raycast.get_collision_point(), BlockTypes.AIR)
+		#for pos in raycast.steps_traversed:
+			#var mesh := MeshInstance3D.new()
+			#mesh.mesh = BoxMesh.new()
+			#world.add_child(mesh)
+			#mesh.global_position = pos + Vector3.ONE * 0.5
+
 
 
 func _physics_process(delta: float) -> void:
 	_movement(delta)
 
 	move_and_slide()
+
+	var raycast := BlockRaycast.cast_ray(
+			camera.global_position, -camera.global_basis.z.normalized(), world)
+	var mesh := MeshInstance3D.new()
+	mesh.mesh = BoxMesh.new()
+	world.add_child(mesh)
+	mesh.global_position = (raycast.get_collision_point() + Vector3.ONE * 0.5)
+	mesh.scale = Vector3.ONE * 1.0
+	var tw := mesh.create_tween()
+	tw.tween_interval(0.1)
+	tw.tween_callback(mesh.queue_free)
 
 
 # based on a queen of squiggles youtube tutorial series.

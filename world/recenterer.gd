@@ -1,6 +1,6 @@
 extends Node
 
-const RECENTER_EVERY_X_CHUNKS := 4
+const RECENTER_EVERY_X_CHUNKS := 16
 const HALF := Vector3.ONE * RECENTER_EVERY_X_CHUNKS * 0.5
 
 var world: World
