@@ -16,5 +16,5 @@ func get_layer_y(pos: Vector3) -> float:
 	match valem:
 		Valem.SINE: return sin(value * frequency) * amplitude
 		Valem.COSINE: return cos(value * frequency) * amplitude
-		Valem.TANGENT: return cos(value * frequency) * amplitude
+		Valem.TANGENT: return tan(value * frequency) * amplitude
 	return -1.0

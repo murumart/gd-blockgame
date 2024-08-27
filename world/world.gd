@@ -15,11 +15,13 @@ const NEIGHBOUR_ADDS: PackedVector3Array = [
 @onready var _chunks_parent: Node3D = $ChunksParent
 ## All loaded chunks are stored here. The keys are chunk positions.
 var chunks := {}
+var world_position := Vector3.ZERO
 
 @export var chunk_loaders: Array[ChunkLoader] = []
 @export var world_generator: WorldGenerator
 @export var generator_settings: GeneratorSettings
 @export var recenter_target: Node3D
+@export var unloading_enalbed := true
 
 
 func _ready() -> void:
@@ -46,7 +48,7 @@ func load_chunk(chunk_pos: Vector3) -> Chunk:
 	chunks[chunk_pos] = chunk
 	_chunks_parent.add_child(chunk)
 	chunk.name = str(chunk_pos)
-	chunk.global_position = chunk_pos * Vector3(Chunk.SIZE)
+	chunk.position = chunk_pos * Vector3(Chunk.SIZE)
 	chunk.block_gen_requested.connect(world_generator._on_chunk_gen_requested)
 	return chunk
 
@@ -84,6 +86,8 @@ func _update_loaded_chunks() -> void:
 
 	# creating new chunks in WorldGenerator
 
+	if not unloading_enalbed:
+		return
 	# unload chunks that don't are loaded should
 	const MAX_DELETIONS := 8
 	var i := 0
@@ -96,13 +100,13 @@ func _update_loaded_chunks() -> void:
 
 
 func get_block(global_block_pos: Vector3) -> int:
-	var cpos := World.world_pos_to_chunk_pos(global_block_pos)
+	var cpos := World.world_pos_to_chunk_pos(global_block_pos + world_position)
 	var chunk: Chunk = chunks.get(cpos, null)
 	if not is_instance_valid(chunk) or chunk.load_step < 1:
 		return BlockTypes.INVALID_BLOCK_ID
-	var chunk_block_pos := global_block_pos - cpos * Vector3(Chunk.SIZE)
-	#assert(chunk_block_pos.x < 16 and chunk_block_pos.y < 16 and chunk_block_pos.z < 16)
-	#assert(chunk_block_pos.x > -1 and chunk_block_pos.y > -1 and chunk_block_pos.z > -1)
+	var chunk_block_pos := global_block_pos - cpos * Vector3(Chunk.SIZE) + world_position
+	assert(chunk_block_pos.x < Chunk.SIZE.x and chunk_block_pos.y < Chunk.SIZE.y and chunk_block_pos.z < Chunk.SIZE.z)
+	assert(chunk_block_pos.x > -1 and chunk_block_pos.y > -1 and chunk_block_pos.z > -1)
 	return chunk.get_block_local(chunk_block_pos)
 
 

@@ -4,7 +4,7 @@ signal changed_chunk(to: Vector3)
 
 ## [World]s use the position of these to load chunks.
 
-@export_range(1, 32) var load_distance := 3 ## How many circles to load chunks around this loader.
+@export_range(1, 64) var load_distance := 3 ## How many circles to load chunks around this loader.
 @export var enabled := true
 
 var old_chunk: Vector3

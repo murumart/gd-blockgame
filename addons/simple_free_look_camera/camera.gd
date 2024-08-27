@@ -5,6 +5,7 @@ const SHIFT_MULTIPLIER = 2.5
 const ALT_MULTIPLIER = 1.0 / SHIFT_MULTIPLIER
 
 @export_range(0.0, 1.0) var sensitivity = 0.25
+@export var movement_enabled := true
 
 # Mouse state
 var _mouse_position = Vector2(0.0, 0.0)
@@ -73,7 +74,8 @@ func _input(event):
 # Updates mouselook and movement every frame
 func _process(delta):
 	_update_mouselook()
-	_update_movement(delta)
+	if movement_enabled:
+		_update_movement(delta)
 
 # Updates camera movement
 func _update_movement(delta):

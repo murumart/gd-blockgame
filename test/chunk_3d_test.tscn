@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://klx8164wmk5q"]
+[gd_scene load_steps=18 format=3 uid="uid://klx8164wmk5q"]
 
 [ext_resource type="Script" path="res://addons/simple_free_look_camera/camera.gd" id="1_8mts2"]
 [ext_resource type="Script" path="res://world/chunks/chunk_loader.gd" id="2_0dstt"]
@@ -32,7 +32,6 @@ sky_material = SubResource("ProceduralSkyMaterial_hhte1")
 background_mode = 2
 sky = SubResource("Sky_mg2k5")
 tonemap_mode = 2
-glow_enabled = true
 fog_enabled = true
 fog_mode = 1
 fog_light_color = Color(0.6, 0.745098, 0.913725, 1)
@@ -41,9 +40,24 @@ fog_density = 1.0
 fog_aerial_perspective = 0.585
 fog_sky_affect = 0.5
 fog_depth_curve = 4.92457
-fog_depth_begin = 32.0
-fog_depth_end = 64.0
+fog_depth_begin = 512.0
+fog_depth_end = 512.0
 volumetric_fog_density = 0.1762
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vpnbl"]
+shading_mode = 0
+albedo_color = Color(1, 0, 1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_x42gs"]
+material = SubResource("StandardMaterial3D_vpnbl")
+size = Vector3(1, 2940, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k3wvy"]
+shading_mode = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_gce2t"]
+material = SubResource("StandardMaterial3D_k3wvy")
+size = Vector3(1, 2940, 1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l88ll"]
 shading_mode = 0
@@ -62,31 +76,24 @@ environment = SubResource("Environment_sejph")
 transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
 shadow_enabled = true
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.9502, 524.745, 28.0943)
-script = ExtResource("1_8mts2")
-
-[node name="OmniLight3D" type="OmniLight3D" parent="Camera3D"]
-visible = false
-shadow_enabled = true
-omni_range = 12.0
-
-[node name="ChunkLoader" type="Node3D" parent="Camera3D"]
-script = ExtResource("2_0dstt")
-load_distance = 8
-enabled = false
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_x42gs")
+skeleton = NodePath("../World")
 
 [node name="World" parent="." node_paths=PackedStringArray("chunk_loaders", "recenter_target") instance=ExtResource("2_3n2ij")]
-chunk_loaders = [NodePath("../Player/ChunkLoader"), NodePath("../Camera3D/ChunkLoader")]
+chunk_loaders = [NodePath("../Player/ChunkLoader"), NodePath("../Player/Camera3D/ChunkLoader")]
 generator_settings = ExtResource("4_r4sia")
 recenter_target = NodePath("../Player")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="World"]
+mesh = SubResource("BoxMesh_gce2t")
 
 [node name="DebugUi" parent="." node_paths=PackedStringArray("camera", "world") instance=ExtResource("4_b72s5")]
 camera = NodePath("../Player/CameraPivot/Camera3D")
 world = NodePath("../World")
 
 [node name="Player" parent="." instance=ExtResource("6_c0nql")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 513, 18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1000, 0)
 
 [node name="BlockCollisionMaker" type="Node3D" parent="Player" node_paths=PackedStringArray("world")]
 script = ExtResource("3_pytwc")
@@ -101,5 +108,20 @@ load_distance = 18
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)
 visible = false
 mesh = SubResource("BoxMesh_dq0e5")
+
+[node name="Camera3D" type="Camera3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 16, 0)
+script = ExtResource("1_8mts2")
+movement_enabled = false
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Player/Camera3D"]
+visible = false
+shadow_enabled = true
+omni_range = 12.0
+
+[node name="ChunkLoader" type="Node3D" parent="Player/Camera3D"]
+script = ExtResource("2_0dstt")
+load_distance = 64
+enabled = false
 
 [editable path="Player"]

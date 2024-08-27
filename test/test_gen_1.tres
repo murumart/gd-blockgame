@@ -1,30 +1,22 @@
-[gd_resource type="Resource" script_class="SineLayers" load_steps=18 format=3 uid="uid://ce06k7h07v0sq"]
+[gd_resource type="Resource" script_class="SineLayers" load_steps=16 format=3 uid="uid://ce06k7h07v0sq"]
 
 [ext_resource type="Script" path="res://world/generation/generator_settings.gd" id="1_0sg66"]
-[ext_resource type="Script" path="res://world/generation/random_blicks.gd" id="2_ur1v4"]
 [ext_resource type="Script" path="res://world/generation/sines/weird_sine_caves.gd" id="3_jv70n"]
 [ext_resource type="Script" path="res://world/generation/block_layers/block_layer.gd" id="4_2b0hx"]
 [ext_resource type="Script" path="res://world/generation/block_layers/y_block_layers.gd" id="5_qtsw8"]
 [ext_resource type="Script" path="res://world/generation/sines/sine_layer.gd" id="6_6t8u0"]
 [ext_resource type="Script" path="res://world/generation/sines/sine_layers.gd" id="7_f3aaf"]
 
-[sub_resource type="Resource" id="Resource_r2ksf"]
-script = ExtResource("2_ur1v4")
-air_chance = 0.999
-addons = Array[ExtResource("1_0sg66")]([])
-ignore_as_addon = 3
-ignore_from_addons = 3
-
 [sub_resource type="Resource" id="Resource_o43ii"]
 script = ExtResource("3_jv70n")
 in_block = 0
 out_block = -1
-overall_addition = Vector3(0, 487.24, 0)
+overall_addition = Vector3(0, 0, 0)
 overall_multiplier = 0.05
 n_z_expo = 2.0
 layer_y_mult = 2.0
 position_y_mult = 10.0
-position_z_mult = 800.0
+position_z_mult = 600.0
 addons = Array[ExtResource("1_0sg66")]([])
 ignore_as_addon = 1
 ignore_from_addons = 3
@@ -51,7 +43,7 @@ layers = Array[ExtResource("4_2b0hx")]([SubResource("Resource_smqja"), SubResour
 [sub_resource type="Resource" id="Resource_2akd0"]
 script = ExtResource("6_6t8u0")
 valem = 0
-frequency = 0.1
+frequency = 0.11
 amplitude = 4.0
 position_component = 0
 mode = 0
@@ -59,8 +51,8 @@ mode = 0
 [sub_resource type="Resource" id="Resource_8icma"]
 script = ExtResource("6_6t8u0")
 valem = 1
-frequency = 0.1
-amplitude = 4.0
+frequency = 0.06
+amplitude = 5.0
 position_component = 2
 mode = 1
 
@@ -84,6 +76,6 @@ mode = 0
 script = ExtResource("7_f3aaf")
 layers = Array[ExtResource("6_6t8u0")]([SubResource("Resource_2akd0"), SubResource("Resource_8icma"), SubResource("Resource_el16o"), SubResource("Resource_5kx3p")])
 block_layers = SubResource("Resource_fpuw7")
-addons = Array[ExtResource("1_0sg66")]([SubResource("Resource_r2ksf"), SubResource("Resource_o43ii")])
+addons = Array[ExtResource("1_0sg66")]([SubResource("Resource_o43ii")])
 ignore_as_addon = 3
 ignore_from_addons = 1

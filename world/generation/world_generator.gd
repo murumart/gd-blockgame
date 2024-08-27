@@ -25,7 +25,7 @@ func start_generating(_chunk: Chunk) -> void:
 		return
 	_generating_chunk = _chunk
 	_chunk._history[Engine.get_process_frames()] = "posting for block gen"
-	_generating_chunk_position = _chunk.global_position
+	_generating_chunk_position = _chunk.global_position + _world.world_position
 	_generating_chunk_data = _chunk.data
 	#print("-- qgue: post chunk " + _chunk.name)
 	active = true
@@ -88,7 +88,7 @@ func _get_chunk_poses_to_load() -> Array[Vector3]:
 	for loader in _world.chunk_loaders:
 		if not loader.enabled:
 			continue
-		var chunk_pos := World.world_pos_to_chunk_pos(loader.global_position)
+		var chunk_pos := World.world_pos_to_chunk_pos(loader.global_position + _world.world_position)
 		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos, loader.load_distance))
 		var yrange := roundi(loader.load_distance / 8.0)
 		for y in range(-yrange, yrange + 1):
@@ -107,7 +107,7 @@ func get_chunk_poses_to_load_sorted() -> PackedVector3Array:
 	for loader in _world.chunk_loaders:
 		if not loader.enabled:
 			continue
-		chunk_pos = World.world_pos_to_chunk_pos(loader.global_position)
+		chunk_pos = World.world_pos_to_chunk_pos(loader.global_position + _world.world_position)
 	toreturn.sort_custom(_sort_poses_by_distance_from_loader.bind(chunk_pos))
 	#print("getting loadable chnks took ", Time.get_ticks_msec() - time, " ms")
 	return toreturn

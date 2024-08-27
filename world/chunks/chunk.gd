@@ -47,30 +47,6 @@ func _generation_thread_finished() -> void:
 	#print("generation of ", name, " finished. ")
 
 
-func __builtin_generation() -> void:
-	data.clear_block_data()
-	data.init_block_data()
-	var time := Time.get_ticks_msec()
-	var data_empty := true
-	for y in SIZE.y:
-		for x in SIZE.x:
-			for z in SIZE.z:
-				var cpos := World.world_pos_to_chunk_pos(global_position)
-				var bpos := Vector3(x, y, z)
-				var world_pos := cpos * Vector3(SIZE) + bpos
-				var idx := ChunkData.pos_to_index(bpos)
-				if (world_pos.y
-						< (sin(world_pos.x * 0.1) * cos(world_pos.z * 0.1) * 16.0
-							+ cos(world_pos.x * 0.001) * sin(world_pos.z * 0.001) * 500)
-						):
-					data.set_block_at(idx, randi_range(1, 3))
-					data_empty = false
-	if data_empty:
-		data.set_single_block_type(0)
-	load_step = LoadSteps.BLOCKS_GENNED
-	print("chunkgen took ", Time.get_ticks_msec() - time)
-
-
 func make_mesh(_world: World = null) -> void:
 	#mesh.call_deferred("create_mesh", data)
 	if data.block_data.is_empty():
