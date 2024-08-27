@@ -55,7 +55,7 @@ func __builtin_generation() -> void:
 	for y in SIZE.y:
 		for x in SIZE.x:
 			for z in SIZE.z:
-				var cpos := World.global_pos_to_chunk_pos(global_position)
+				var cpos := World.world_pos_to_chunk_pos(global_position)
 				var bpos := Vector3(x, y, z)
 				var world_pos := cpos * Vector3(SIZE) + bpos
 				var idx := ChunkData.pos_to_index(bpos)
@@ -71,12 +71,12 @@ func __builtin_generation() -> void:
 	print("chunkgen took ", Time.get_ticks_msec() - time)
 
 
-func make_mesh(world: World = null) -> void:
+func make_mesh(_world: World = null) -> void:
 	#mesh.call_deferred("create_mesh", data)
 	if data.block_data.is_empty():
 		return
 	#mesh.create_mesh(data, world)
-	if mesh.create_mesh_thread(data, world):
+	if mesh.create_mesh_thread(data, _world):
 		load_step = LoadSteps.MESH_GENNING
 
 

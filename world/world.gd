@@ -13,13 +13,13 @@ const NEIGHBOUR_ADDS: PackedVector3Array = [
 ]
 
 @onready var _chunks_parent: Node3D = $ChunksParent
-@onready var _chunk_loader_timer: Timer = $ChunkLoaderTimer
 ## All loaded chunks are stored here. The keys are chunk positions.
 var chunks := {}
 
 @export var chunk_loaders: Array[ChunkLoader] = []
 @export var world_generator: WorldGenerator
 @export var generator_settings: GeneratorSettings
+@export var recenter_target: Node3D
 
 
 func _ready() -> void:
@@ -30,7 +30,7 @@ func _ready() -> void:
 	world_generator.recalculate_visible_chunk_positions()
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	_update_loaded_chunks()
 
 
@@ -82,16 +82,7 @@ func _update_loaded_chunks() -> void:
 		#await get_tree().process_frame
 		chunk.make_mesh(self)
 
-	# adding new chunks to be loaded.
-	#var c := 0
-	#for pos in poses_to_load:
-		##await get_tree().process_frame
-		#var chunk := load_chunk(pos)
-		#if is_instance_valid(chunk) and chunk.load_step == Chunk.LoadSteps.UNLOADED:
-			#chunk.generate()
-		#c += 1
-		#if c > 20:
-			#break
+	# creating new chunks in WorldGenerator
 
 	# unload chunks that don't are loaded should
 	const MAX_DELETIONS := 8
@@ -105,7 +96,7 @@ func _update_loaded_chunks() -> void:
 
 
 func get_block(global_block_pos: Vector3) -> int:
-	var cpos := World.global_pos_to_chunk_pos(global_block_pos)
+	var cpos := World.world_pos_to_chunk_pos(global_block_pos)
 	var chunk: Chunk = chunks.get(cpos, null)
 	if not is_instance_valid(chunk) or chunk.load_step < 1:
 		return BlockTypes.INVALID_BLOCK_ID
@@ -115,5 +106,5 @@ func get_block(global_block_pos: Vector3) -> int:
 	return chunk.get_block_local(chunk_block_pos)
 
 
-static func global_pos_to_chunk_pos(global_pos: Vector3) -> Vector3:
-	return (global_pos / Vector3(Chunk.SIZE)).floor()
+static func world_pos_to_chunk_pos(world_position: Vector3) -> Vector3:
+	return (world_position / Vector3(Chunk.SIZE)).floor()

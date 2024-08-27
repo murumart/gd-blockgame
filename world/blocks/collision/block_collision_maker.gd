@@ -63,7 +63,7 @@ func _recalculate_collision_shapes() -> void:
 		#shape.add_child(mi2)
 
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	var current_position := global_position.floor()
 	_body.global_position = current_position + HALF
 

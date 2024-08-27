@@ -10,7 +10,7 @@ func _physics_process(_delta: float) -> void:
 
 
 func get_text() -> String:
-	var chunk_pos := World.global_pos_to_chunk_pos(camera.global_position)
+	var chunk_pos := World.world_pos_to_chunk_pos(camera.global_position)
 	return (
 			"fps: " + str(Engine.get_frames_per_second())
 			+ "\npos: " + str(camera.global_position)

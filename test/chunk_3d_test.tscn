@@ -38,11 +38,12 @@ fog_mode = 1
 fog_light_color = Color(0.6, 0.745098, 0.913725, 1)
 fog_sun_scatter = 0.07
 fog_density = 1.0
+fog_aerial_perspective = 0.585
 fog_sky_affect = 0.5
 fog_depth_curve = 4.92457
 fog_depth_begin = 32.0
 fog_depth_end = 64.0
-volumetric_fog_density = 0.02
+volumetric_fog_density = 0.1762
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l88ll"]
 shading_mode = 0
@@ -75,9 +76,10 @@ script = ExtResource("2_0dstt")
 load_distance = 8
 enabled = false
 
-[node name="World" parent="." node_paths=PackedStringArray("chunk_loaders") instance=ExtResource("2_3n2ij")]
+[node name="World" parent="." node_paths=PackedStringArray("chunk_loaders", "recenter_target") instance=ExtResource("2_3n2ij")]
 chunk_loaders = [NodePath("../Player/ChunkLoader"), NodePath("../Camera3D/ChunkLoader")]
 generator_settings = ExtResource("4_r4sia")
+recenter_target = NodePath("../Player")
 
 [node name="DebugUi" parent="." node_paths=PackedStringArray("camera", "world") instance=ExtResource("4_b72s5")]
 camera = NodePath("../Player/CameraPivot/Camera3D")

@@ -240,24 +240,24 @@ func _chunk_pos_comparison() -> void:
 	for i in LOOPS:
 		for x in BOX_SIZE: for y in BOX_SIZE: for z in BOX_SIZE:
 			var pos := Vector3(x, y, z)
-			arr_1.append(global_pos_to_chunk_pos_1(pos))
+			arr_1.append(world_pos_to_chunk_pos_1(pos))
 	time_1 = Time.get_ticks_msec() - time
 	time = Time.get_ticks_msec()
 	for i in LOOPS:
 		for x in BOX_SIZE: for y in BOX_SIZE: for z in BOX_SIZE:
 			var pos := Vector3(x, y, z)
-			arr_2.append(global_pos_to_chunk_pos_2(pos))
+			arr_2.append(world_pos_to_chunk_pos_2(pos))
 	time_2 = Time.get_ticks_msec() - time
 	print("time 1: ", time_1, "; time 2: ", time_2)
 	print("arrays equal: ", arr_1 == arr_2)
 
 
-func global_pos_to_chunk_pos_1(global_pos: Vector3) -> Vector3:
+func world_pos_to_chunk_pos_1(global_pos: Vector3) -> Vector3:
 	var x := floori(global_pos.x / Chunk.SIZE.x)
 	var y := floori(global_pos.y / Chunk.SIZE.y)
 	var z := floori(global_pos.z / Chunk.SIZE.z)
 	return Vector3(x, y, z)
 
 
-func global_pos_to_chunk_pos_2(global_pos: Vector3) -> Vector3:
+func world_pos_to_chunk_pos_2(global_pos: Vector3) -> Vector3:
 	return (global_pos / Vector3(Chunk.SIZE)).floor()

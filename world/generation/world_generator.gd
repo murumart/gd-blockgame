@@ -43,7 +43,7 @@ func _threaded_generation() -> void:
 		#print("--- GEN waiting")
 		_semaph.wait()
 		#print("--- GEN starting with chunk at ",
-				#World.global_pos_to_chunk_pos(_generating_chunk_position))
+				#World.world_pos_to_chunk_pos(_generating_chunk_position))
 		assert(is_instance_valid(_generating_chunk))
 
 		for y in Chunk.SIZE.y:
@@ -88,7 +88,7 @@ func _get_chunk_poses_to_load() -> Array[Vector3]:
 	for loader in _world.chunk_loaders:
 		if not loader.enabled:
 			continue
-		var chunk_pos := World.global_pos_to_chunk_pos(loader.global_position)
+		var chunk_pos := World.world_pos_to_chunk_pos(loader.global_position)
 		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos, loader.load_distance))
 		var yrange := roundi(loader.load_distance / 8.0)
 		for y in range(-yrange, yrange + 1):
@@ -107,7 +107,7 @@ func get_chunk_poses_to_load_sorted() -> PackedVector3Array:
 	for loader in _world.chunk_loaders:
 		if not loader.enabled:
 			continue
-		chunk_pos = World.global_pos_to_chunk_pos(loader.global_position)
+		chunk_pos = World.world_pos_to_chunk_pos(loader.global_position)
 	toreturn.sort_custom(_sort_poses_by_distance_from_loader.bind(chunk_pos))
 	#print("getting loadable chnks took ", Time.get_ticks_msec() - time, " ms")
 	return toreturn

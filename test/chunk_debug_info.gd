@@ -17,7 +17,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		hide()
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	do_text()
 
 

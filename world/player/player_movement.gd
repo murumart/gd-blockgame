@@ -31,25 +31,27 @@ func _input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	var on_floor := is_on_floor()
+	var friction := SPEED * int(on_floor)
 	# Add the gravity.
-	if not is_on_floor():
+	if not on_floor:
 		velocity += get_gravity() * delta * GRAV_MULT
 		velocity.y = maxf(minf(velocity.y, MAX_FALL_SPEED), -MAX_FALL_SPEED)
 
-	# Handle jump.
-	if Input.is_action_pressed("ui_accept") and is_on_floor():
-		velocity.y = JUMP_VELOCITY
-
-	# Get the input direction and handle the movement/deceleration.
-	# As good practice, you should replace UI actions with custom gameplay actions.
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
 	input_dir = input_dir.rotated(-camera_pivot.rotation.y)
 	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	if direction:
-		velocity.x = direction.x * SPEED
-		velocity.z = direction.z * SPEED
+		velocity.x = move_toward(velocity.x, direction.x * SPEED, SPEED * delta * (friction + 0.5))
+		velocity.z = move_toward(velocity.z, direction.z * SPEED, SPEED * delta * (friction + 0.5))
 	else:
-		velocity.x = move_toward(velocity.x, 0, SPEED)
-		velocity.z = move_toward(velocity.z, 0, SPEED)
+		velocity.x = move_toward(velocity.x, 0, SPEED * delta * friction)
+		velocity.z = move_toward(velocity.z, 0, SPEED * delta * friction)
+
+	if Input.is_action_pressed("ui_accept") and on_floor:
+		velocity.y = JUMP_VELOCITY
+		if direction:
+			velocity.x *= 1.5
+			velocity.z *= 1.5
 
 	move_and_slide()

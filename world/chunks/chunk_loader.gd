@@ -10,10 +10,10 @@ signal changed_chunk(to: Vector3)
 var old_chunk: Vector3
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if not enabled:
 		return
-	var current_chunk := World.global_pos_to_chunk_pos(global_position)
+	var current_chunk := World.world_pos_to_chunk_pos(global_position)
 	if current_chunk != old_chunk:
 		changed_chunk.emit(current_chunk)
 	old_chunk = current_chunk

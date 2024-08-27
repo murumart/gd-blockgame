@@ -2,7 +2,6 @@ class_name ChunkMeshThread
 
 var _thread := Thread.new()
 var _semaph := Semaphore.new()
-var _mutex := Mutex.new()
 var active := false
 
 var _current_mesh_instance: ChunkMesh
