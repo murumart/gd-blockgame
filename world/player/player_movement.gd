@@ -40,11 +40,15 @@ func _input(event: InputEvent) -> void:
 				if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 				else Input.MOUSE_MODE_CAPTURED)
 	elif event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
-		var raycast := BlockRaycast.cast_ray(
-				camera.global_position, -camera.global_basis.z, world)
+		var raycast := BlockRaycast.cast_ray_fast(
+				camera.global_position, -camera.global_basis.z, 9, world)
 		print(raycast)
 		if not raycast.failure:
-			world.set_block(raycast.get_collision_point(), BlockTypes.AIR)
+			#world.place_block(raycast.get_collision_point(), BlockTypes.AIR)
+			var add_vec := Vector3.ZERO
+			add_vec[raycast.xyz_axis] = 1
+			#world.place_block(raycast.get_collision_point() + add_vec, 1)
+			world.place_block(raycast.get_collision_point(), 0)
 		#for pos in raycast.steps_traversed:
 			#var mesh := MeshInstance3D.new()
 			#mesh.mesh = BoxMesh.new()
@@ -58,13 +62,17 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	var raycast := BlockRaycast.cast_ray(
-			camera.global_position, -camera.global_basis.z.normalized(), world)
+	var raycast := BlockRaycast.cast_ray_fast(
+			camera.global_position, -camera.global_basis.z, 9, world)
+	if raycast.failure:
+		return
 	var mesh := MeshInstance3D.new()
 	mesh.mesh = BoxMesh.new()
 	world.add_child(mesh)
-	mesh.global_position = (raycast.get_collision_point() + Vector3.ONE * 0.5)
-	mesh.scale = Vector3.ONE * 1.0
+	var add_vec := Vector3.ZERO
+	#add_vec[raycast.xyz_axis] = 1
+	mesh.global_position = (raycast.get_collision_point() + add_vec + Vector3.ONE * 0.5)
+	mesh.scale = Vector3.ONE * 1.01
 	var tw := mesh.create_tween()
 	tw.tween_interval(0.1)
 	tw.tween_callback(mesh.queue_free)

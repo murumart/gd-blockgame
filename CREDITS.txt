@@ -1,0 +1,2 @@
+Block raycast algo implemented from pos by drcicero implemented from "A Fast Voxel Traversal Algorithm for Ray Tracing". Amanatides and Woo, 1987
+	https://gamedev.stackexchange.com/a/203825

@@ -119,6 +119,14 @@ func set_block(global_block_pos: Vector3, block: int) -> bool:
 	assert(chunk_block_pos.x < Chunk.SIZE.x and chunk_block_pos.y < Chunk.SIZE.y and chunk_block_pos.z < Chunk.SIZE.z)
 	assert(chunk_block_pos.x > -1 and chunk_block_pos.y > -1 and chunk_block_pos.z > -1)
 	chunk.set_block_local(chunk_block_pos, block)
+	return true
+
+
+func place_block(global_block_pos: Vector3, block: int) -> bool:
+	if not set_block(global_block_pos, block):
+		return false
+	var cpos := World.world_pos_to_chunk_pos(global_block_pos + world_position)
+	var chunk: Chunk = chunks.get(cpos, null)
 	chunk.make_mesh(self, true)
 	return true
 
