@@ -5,7 +5,6 @@ var xyz_axis: int
 var failure := false
 var steps_traversed: PackedVector3Array = []
 var found_block: int = -1
-var _debug_data := {}
 
 
 func get_collision_point() -> Vector3:
@@ -38,7 +37,8 @@ static func vec_argmin(vec: Vector3) -> int:
 
 
 # https://gamedev.stackexchange.com/a/203825
-# fast but starts groaning in pain and crying when sign != (-1, -1, -1)
+# ignore the grid variable after the start. it is not representative of the
+# raycast's position after the prep phase.
 static func cast_ray_fast(
 		start_position: Vector3,
 		step: Vector3,
@@ -51,22 +51,17 @@ static func cast_ray_fast(
 	var steps_storage: PackedVector3Array = []
 
 	var signv := vec_sign(step)
-	var _breaks := signv != Vector3.ONE * -1
 	var reciprocal := Vector3.ONE / step.abs()
 	var grid := start_position.floor()
 	var steps := (signv + Vector3.ONE) * 0.5 - (start_position - grid) / step
-	if _breaks:
-		pass
-	rc._debug_data["params"] = {"start_position": start_position, "step": step}
-	rc._debug_data["pre"] = {"signv": signv, "reciprocal": reciprocal, "grid": grid, "steps": steps, "_breaks": _breaks}
-	rc._debug_data["steps"] = []
 
 	for i in steps_count:
 		var axis: int = vec_argmin(steps)
-		grid[axis] += signv[axis]
+		#grid[axis] += signv[axis] this isnät needed anywhere
 		var traversed := start_position + step * steps[axis]
-		steps_storage.append(grid)
-		var block := _get_block(grid, world)
+		var t_floor := traversed.floor()
+		steps_storage.append(t_floor)
+		var block := _get_block(t_floor, world)
 		if block != BlockTypes.AIR:
 			rc.failure = false
 			rc.steps_traversed = steps_storage
@@ -75,9 +70,6 @@ static func cast_ray_fast(
 			rc.position = traversed
 			return rc
 		steps[axis] += reciprocal[axis]
-		rc._debug_data["steps"].append(
-				{"axis": ["x", "y", "z"][axis], "grid": grid,
-				"traversed": traversed, "steps": steps})
 
 	rc.failure = true
 	rc.steps_traversed = steps_storage

@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3 uid="uid://klx8164wmk5q"]
+[gd_scene load_steps=31 format=3 uid="uid://klx8164wmk5q"]
 
 [ext_resource type="Script" path="res://addons/simple_free_look_camera/camera.gd" id="1_8mts2"]
 [ext_resource type="Script" path="res://world/chunks/chunk_loader.gd" id="2_0dstt"]
@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://world/generation/sines/sine_layer.gd" id="5_vb04r"]
 [ext_resource type="Script" path="res://world/generation/sines/sine_layers.gd" id="6_atk01"]
 [ext_resource type="PackedScene" uid="uid://mnjblgt5ek5" path="res://world/player/player.tscn" id="6_c0nql"]
+[ext_resource type="PackedScene" uid="uid://cgc4qbvmjofvg" path="res://test/raycast_test.tscn" id="13_votl8"]
 
 [sub_resource type="GDScript" id="GDScript_tfr6n"]
 resource_name = "3dtest"
@@ -211,5 +212,10 @@ omni_range = 12.0
 script = ExtResource("2_0dstt")
 load_distance = 64
 enabled = false
+
+[node name="RaycastTestShitFuck" parent="Player" node_paths=PackedStringArray("camera", "_world", "debug_ui") instance=ExtResource("13_votl8")]
+camera = NodePath("../CameraPivot/Camera3D")
+_world = NodePath("../../World")
+debug_ui = NodePath("../../DebugUi")
 
 [editable path="Player"]
