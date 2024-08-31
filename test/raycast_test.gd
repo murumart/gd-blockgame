@@ -1,5 +1,7 @@
 extends Node3D
 
+const BLOCK_MAX_LENGTH := 1.73205
+
 
 @export var camera: Camera3D
 @export var _world: World
@@ -9,6 +11,9 @@ extends Node3D
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_paste"):
 		cast_ray_fast(camera.global_position, -camera.global_basis.z, 9)
+	if event.is_action_pressed("ui_accept"):
+		var rc := debug_ui.db_disp_rc(camera.global_position, -camera.global_basis.z, Color(Color.RED, 0.2))
+		create_tween().tween_interval(10.0).finished.connect(rc.queue_free)
 
 
 func cast_ray_fast(
@@ -25,6 +30,8 @@ func cast_ray_fast(
 
 	var signv := BlockRaycast.vec_sign(step)
 
+	debug_ui.db_disp_rc(start_position, step, Color(Color.BLACK, 0.3))
+	await time(1.0)
 
 	var _breaks := signv != Vector3.ONE * -1
 	debug_ui.db_disp_rc(start_position, signv, Color(Color.WHITE if not _breaks else Color.RED, 0.05))
@@ -62,13 +69,15 @@ func cast_ray_fast(
 		await time(1.0)
 
 		var traversed := start_position + step * steps[axis]
-		debug_ui.db_disp_recta(traversed, Vector3.ONE * 0.2, Color(Color.REBECCA_PURPLE, 0.1))
+		if (traversed - _traversd).length() > BLOCK_MAX_LENGTH:
+			print("AAAAAAAAAAAAAAAAAAA")
+		debug_ui.db_disp_recta(traversed, Vector3.ONE * 0.2, Color(Color.REBECCA_PURPLE, 0.5))
 		debug_ui.db_disp_rc(traversed, _traversd - traversed, Color(Color.AQUA, 0.5))
 		debug_ui.db_disp_recta(traversed.floor() + Vector3.ONE * 0.5, Vector3.ONE * 0.5, Color(Color.MEDIUM_AQUAMARINE, 0.7))
 		_traversd = traversed
 		await time(1.0)
 
-		var block := BlockRaycast._get_block(grid, _world)
+		var block := BlockRaycast._get_block(traversed.floor(), _world)
 		if block != BlockTypes.AIR:
 			rc.failure = false
 			rc.steps_traversed = steps_storage
@@ -84,6 +93,60 @@ func cast_ray_fast(
 
 	rc.failure = true
 	rc.steps_traversed = steps_storage
+	return rc
+
+
+func cast_ray_stupid(
+		start_position: Vector3,
+		direction: Vector3,
+		steps: int,
+		world: World) -> BlockRaycast:
+
+	var rc := BlockRaycast.new()
+	rc.failure = true
+	direction = direction.normalized()
+	debug_ui.db_disp_rc(start_position, direction, Color.WHITE)
+	await time(1.0)
+
+	var collision_raycast := RayCast3D.new()
+	var block_collisions := BlockCollisionMaker.new()
+	block_collisions.world = world
+	block_collisions.collision_layer = 0b00001
+	world.add_child(collision_raycast)
+	world.add_child(block_collisions)
+
+	collision_raycast.global_position = start_position
+	collision_raycast.target_position = Vector3.ZERO
+	collision_raycast.collision_mask = 0b00001
+	await time(1.0)
+
+	for i in steps:
+		block_collisions.recalculate_block_collisions()
+		collision_raycast.force_raycast_update()
+		await time(1.0)
+
+		var grid_position := (collision_raycast.global_position
+				+ collision_raycast.target_position).floor()
+		rc.steps_traversed.append(grid_position)
+		debug_ui.db_disp_recta(grid_position + Vector3.ONE * 0.5, Vector3.ONE * 0.8, Color(Color.REBECCA_PURPLE, 0.2))
+		await time(1.0)
+
+		var collider := collision_raycast.get_collider()
+		if is_instance_valid(collider):
+			collider = collider as CollisionShape3D
+			var block := world.get_block(grid_position)
+			rc.failure = false
+			rc.found_block = block
+			break
+
+		block_collisions.global_position = (collision_raycast.global_position
+				+ collision_raycast.target_position)
+		collision_raycast.target_position += direction
+		await time(1.0)
+
+	collision_raycast.queue_free()
+	block_collisions.queue_free()
+
 	return rc
 
 

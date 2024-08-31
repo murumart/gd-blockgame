@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://fio7os57a2ex"]
+
+[ext_resource type="Script" path="res://test/raycast_2d_test.gd" id="1_lt200"]
+
+[node name="Raycast2dTest" type="Node2D"]
+script = ExtResource("1_lt200")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(20, 20)

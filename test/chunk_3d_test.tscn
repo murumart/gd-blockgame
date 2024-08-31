@@ -90,7 +90,7 @@ layers = Array[ExtResource("3_pdpdc")]([SubResource("Resource_nj3h1"), SubResour
 script = ExtResource("5_vb04r")
 valem = 0
 frequency = 0.1
-amplitude = 1.0
+amplitude = 10.0
 position_component = 0
 mode = 0
 

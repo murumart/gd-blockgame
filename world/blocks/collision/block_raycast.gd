@@ -39,6 +39,7 @@ static func vec_argmin(vec: Vector3) -> int:
 # https://gamedev.stackexchange.com/a/203825
 # ignore the grid variable after the start. it is not representative of the
 # raycast's position after the prep phase.
+# current impl goes through block edges. groaning in pain and crying.
 static func cast_ray_fast(
 		start_position: Vector3,
 		step: Vector3,
@@ -76,18 +77,51 @@ static func cast_ray_fast(
 	return rc
 
 
-static func cast_ray(
+# uses actual nodes and godot collision detection
+# slow and doesn't work either.
+static func cast_ray_stupid(
 		start_position: Vector3,
 		direction: Vector3,
 		steps: int,
 		world: World) -> BlockRaycast:
 
 	var rc := BlockRaycast.new()
-	var steps_traversed: PackedVector3Array = []
+	rc.failure = true
 	direction = direction.normalized()
-	var position := start_position
+
+	var collision_raycast := RayCast3D.new()
+	var block_collisions := BlockCollisionMaker.new()
+	block_collisions.world = world
+	block_collisions.collision_layer = 0b00001
+	world.add_child(collision_raycast)
+	world.add_child(block_collisions)
+
+	collision_raycast.global_position = start_position
+	collision_raycast.target_position = Vector3.ZERO
+	collision_raycast.collision_mask = 0b00001
+
 	for i in steps:
-		pass
+		block_collisions.recalculate_block_collisions()
+		collision_raycast.force_raycast_update()
+
+		var grid_position := (collision_raycast.global_position
+				+ collision_raycast.target_position).floor()
+		rc.steps_traversed.append(grid_position)
+
+		var collider := collision_raycast.get_collider()
+		if is_instance_valid(collider):
+			collider = collider as CollisionShape3D
+			var block := world.get_block(grid_position)
+			rc.failure = false
+			rc.found_block = block
+			break
+
+		block_collisions.global_position = (collision_raycast.global_position
+				+ collision_raycast.target_position)
+		collision_raycast.target_position += direction
+
+	collision_raycast.queue_free()
+	block_collisions.queue_free()
 
 	return rc
 

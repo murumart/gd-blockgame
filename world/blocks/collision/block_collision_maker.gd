@@ -80,5 +80,9 @@ func _calculate_block_collisions() -> void:
 		if block == BlockTypes.INVALID_BLOCK_ID:
 			continue
 		var btype := BlockTypes.get_block(block)
-		if block == 0 or btype.mesh_type == BlockType.MeshType.NONE:
+		if btype.mesh_type == BlockType.MeshType.NONE:
 			shape.disabled = true
+
+
+func recalculate_block_collisions() -> void:
+	_calculate_block_collisions()
