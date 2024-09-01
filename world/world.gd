@@ -131,5 +131,5 @@ func place_block(global_block_pos: Vector3, block: int) -> bool:
 	return true
 
 
-static func world_pos_to_chunk_pos(world_position: Vector3) -> Vector3:
-	return (world_position / Vector3(Chunk.SIZE)).floor()
+static func world_pos_to_chunk_pos(world_pos: Vector3) -> Vector3:
+	return (world_pos / Vector3(Chunk.SIZE)).floor()

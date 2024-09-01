@@ -84,8 +84,6 @@ func _movement(delta: float) -> void:
 	var gravity := get_gravity()
 	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
 	var target_velo := Vector3()
-	var forward := camera.global_basis.z
-	var right := camera.global_basis.x
 	var current_speed := SPEED
 	target_velo += camera.global_basis.x * input.x
 	target_velo += camera.global_basis.z * input.y

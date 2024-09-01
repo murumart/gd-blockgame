@@ -51,7 +51,7 @@ func create_mesh(
 		chunk_data: ChunkData,
 		world: World,
 		global_position: Vector3) -> void:
-	var time := Time.get_ticks_msec()
+#	var time := Time.get_ticks_msec()
 
 	if chunk_data.block_data.size() == ChunkData.BYTES_PER_BLOCK:
 		return

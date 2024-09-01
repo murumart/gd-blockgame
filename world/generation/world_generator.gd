@@ -65,7 +65,7 @@ func _threaded_generation() -> void:
 		set_deferred("active", false)
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	_process_chunks()
 
 
@@ -101,7 +101,7 @@ func _get_chunk_poses_to_load() -> Array[Vector3]:
 
 
 func get_chunk_poses_to_load_sorted() -> PackedVector3Array:
-	var time := Time.get_ticks_msec()
+	#var time := Time.get_ticks_msec()
 	var toreturn: Array[Vector3] = _get_chunk_poses_to_load()
 	var chunk_pos: Vector3
 	for loader in _world.chunk_loaders:

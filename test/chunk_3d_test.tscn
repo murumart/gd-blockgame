@@ -191,7 +191,7 @@ world = NodePath("../../World")
 
 [node name="ChunkLoader" type="Node3D" parent="Player"]
 script = ExtResource("2_0dstt")
-load_distance = 18
+load_distance = 8
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Player/ChunkLoader"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)

@@ -17,10 +17,6 @@ func get_text() -> String:
 	var wpos := camera.global_position + world.world_position
 	var chunk_pos_old := World.world_pos_to_chunk_pos(camera.global_position)
 	var chunk_pos := World.world_pos_to_chunk_pos(camera.global_position + world.world_position)
-	var facing := Vector3(
-			rad_to_deg(camera.global_basis.z.x),
-			rad_to_deg(camera.global_basis.z.y),
-			rad_to_deg(camera.global_basis.z.z))
 	return (
 			"fps: " + str(Engine.get_frames_per_second())
 			+ "\ngpos: " + str(camera.global_position)

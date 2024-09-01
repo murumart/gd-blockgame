@@ -18,9 +18,9 @@ static func vec_sign(vec: Vector3) -> Vector3:
 	var signy := signf(vec.y)
 	var signz := signf(vec.z)
 	return Vector3(
-			signx if signx != 0 else 1,
-			signy if signy != 0 else 1,
-			signz if signz != 0 else 1,
+			signx if signx != 0.0 else 1.0,
+			signy if signy != 0.0 else 1.0,
+			signz if signz != 0.0 else 1.0,
 	)
 
 
