@@ -1,8 +1,10 @@
 class_name World extends Node3D
 
-## Creates chunks procedurally.
+## The game's play area. Creates chunks procedurally.
 
+## Stores the [PackedScene] of [Chunk].
 const ChunkScene := preload("res://world/chunks/chunk.tscn")
+## Neighbors of an integer coordinate, in order.
 const NEIGHBOUR_ADDS: PackedVector3Array = [
 	Vector3.FORWARD,
 	Vector3.BACK,
@@ -15,12 +17,19 @@ const NEIGHBOUR_ADDS: PackedVector3Array = [
 @onready var _chunks_parent: Node3D = $ChunksParent
 ## All loaded chunks are stored here. The keys are chunk positions.
 var chunks := {}
+## Stores the "global" position offset.
 var world_position := Vector3.ZERO
 
+## Array of [ChunkLoader] nodes, the positions of which chunks are loaded around.
 @export var chunk_loaders: Array[ChunkLoader] = []
+## The [WorldGenerator] instance that generates the world.
 @export var world_generator: WorldGenerator
+## Settings for the [member world_generator].
 @export var generator_settings: GeneratorSettings
+## The world recenters around this target when it goes a certain distance away.
+## See [Recenterer].
 @export var recenter_target: Node3D
+## Whether chunks can be unloaded.
 @export var unloading_enalbed := true
 
 
@@ -40,6 +49,8 @@ func _start_generation() -> void:
 	world_generator._settings = generator_settings
 
 
+## Loads a [Chunk] at [param chunk_pos] and returns it. If a chunk already exists at [param chunk_pos],
+## then returns the pre-existing one.
 func load_chunk(chunk_pos: Vector3) -> Chunk:
 	if is_instance_valid(chunks.get(chunk_pos)):
 		return chunks.get(chunk_pos)
@@ -53,6 +64,7 @@ func load_chunk(chunk_pos: Vector3) -> Chunk:
 	return chunk
 
 
+## Unloads a chunk at [param chunk_pos].
 func unload_chunk(chunk_pos: Vector3) -> void:
 	var chunk: Chunk = chunks[chunk_pos]
 	chunk.load_step = Chunk.LoadSteps.DELETING
@@ -99,6 +111,7 @@ func _update_loaded_chunks() -> void:
 				break
 
 
+## Returns the block at [param global_block_pos].
 func get_block(global_block_pos: Vector3) -> int:
 	var cpos := World.world_pos_to_chunk_pos(global_block_pos + world_position)
 	var chunk: Chunk = chunks.get(cpos, null)
@@ -110,6 +123,8 @@ func get_block(global_block_pos: Vector3) -> int:
 	return chunk.get_block_local(chunk_block_pos)
 
 
+## Sets the block at [param global_block_pos] to [param block].
+## See [member ChunkData.block_data] for the format [param block] should be in.
 func set_block(global_block_pos: Vector3, block: int) -> bool:
 	var cpos := World.world_pos_to_chunk_pos(global_block_pos + world_position)
 	var chunk: Chunk = chunks.get(cpos, null)
@@ -122,6 +137,8 @@ func set_block(global_block_pos: Vector3, block: int) -> bool:
 	return true
 
 
+## Sets the block at [param global_block_pos] to [param block], and remeshes the chunk
+## that the block was in on the main thread.
 func place_block(global_block_pos: Vector3, block: int) -> bool:
 	if not set_block(global_block_pos, block):
 		return false
@@ -131,5 +148,6 @@ func place_block(global_block_pos: Vector3, block: int) -> bool:
 	return true
 
 
+## Returns the [param chunk_pos] that the [param world_pos] was in.
 static func world_pos_to_chunk_pos(world_pos: Vector3) -> Vector3:
 	return (world_pos / Vector3(Chunk.SIZE)).floor()

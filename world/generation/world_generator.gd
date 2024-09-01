@@ -1,15 +1,17 @@
 class_name WorldGenerator extends Node
 
-const MAX_QUEUE_SIZE := 512124317241
+## Generates the [World].
 
 var _thread := Thread.new()
 var _semaph := Semaphore.new()
+## Whether the world generation thread is active at this time.
 var active := false
 
 var _generating_chunk: Chunk
 var _generating_chunk_position: Vector3
 var _generating_chunk_data: ChunkData
 
+## What chunks should be currently loaded.
 var visible_chunk_positions: PackedVector3Array
 
 var _settings: GeneratorSettings
@@ -20,6 +22,7 @@ func _init() -> void:
 	_thread.start(_threaded_generation, Thread.PRIORITY_HIGH)
 
 
+## Starts generation of a [Chunk] if not currently generating.
 func start_generating(_chunk: Chunk) -> void:
 	if active:
 		return
@@ -79,6 +82,7 @@ func _process_chunks() -> void:
 			chunk.generate()
 
 
+## Gets the block using the parent [World]'s [GeneratorSettings] instance.
 func get_block_at(global_position: Vector3) -> int:
 	return _settings.get_block_at(global_position)
 
@@ -100,6 +104,7 @@ func _get_chunk_poses_to_load() -> Array[Vector3]:
 	return toreturn
 
 
+## Returns a list of chunk positions to load, sorted around the last [member World.chunk_loaders].
 func get_chunk_poses_to_load_sorted() -> PackedVector3Array:
 	#var time := Time.get_ticks_msec()
 	var toreturn: Array[Vector3] = _get_chunk_poses_to_load()
@@ -125,10 +130,13 @@ func _exit_tree() -> void:
 	_thread.wait_to_finish()
 
 
+## Resets [member visible_chunk_positions].
 func recalculate_visible_chunk_positions() -> void:
 	visible_chunk_positions = get_chunk_poses_to_load_sorted()
 
 
+## Grows a diamond selection around a start position on the x and z axes.
+## Returns all selected coordinates.
 static func get_diamond(start: Vector3, side_len: int) -> PackedVector3Array:
 	var toreturn: PackedVector3Array = [start]
 	var start_positions: PackedVector3Array = []

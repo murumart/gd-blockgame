@@ -1,9 +1,15 @@
-extends Node
+class_name Recenterer extends Node
 
+## Recenters the [World] around the [member recenter_target]'s global position.
+##
+## Should be a child of a [World] node.
+
+## How far the [member recenter_target] has to go from the center for it to recenter.
 const RECENTER_EVERY_X_CHUNKS := 16
-const HALF := Vector3.ONE * RECENTER_EVERY_X_CHUNKS * 0.5
 
+## This [b]Recenterer[/b]'s [World] owner instance.
 var world: World
+## The world centers around this.
 var recenter_target: Node3D
 var _last_region_position: Vector3
 

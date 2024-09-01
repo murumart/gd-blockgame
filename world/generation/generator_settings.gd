@@ -13,11 +13,13 @@ const FLAG_AIR := 0b10
 @export_flags("Invalid", "Air") var ignore_from_addons: int = 0b11
 
 
+## Returns true when, as an addon, this setting's block result should be ignored.
 func is_addon_block_ignorable(block: int) -> bool:
 	return (block == BlockTypes.INVALID_BLOCK_ID and FLAG_INVALID & ignore_as_addon
 			or block == BlockTypes.AIR and FLAG_AIR & ignore_as_addon)
 
 
+## Returns true when its addon's result block should be ignored.
 func should_addon_block_be_ignored(block: int) -> bool:
 	return (block == BlockTypes.INVALID_BLOCK_ID and FLAG_INVALID & ignore_from_addons
 			or block == BlockTypes.AIR and FLAG_AIR & ignore_from_addons)
@@ -32,6 +34,7 @@ func _get_addons_block(global_position: Vector3) -> int:
 	return BlockTypes.INVALID_BLOCK_ID
 
 
+## Generates and returns a block at a position.
 func get_block_at(global_position: Vector3) -> int:
 	var addon := _get_addons_block(global_position)
 	if not should_addon_block_be_ignored(addon):

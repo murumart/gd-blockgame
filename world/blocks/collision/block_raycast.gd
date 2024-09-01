@@ -1,18 +1,27 @@
 class_name BlockRaycast extends RefCounted
 
-var position: Vector3
+## Class that represents a raycast through the block world and provides static methods
+## for instancing itself.
+
+## The axis of the last traversal.
 var xyz_axis: int
+## Whether the raycast found a block or not.
 var failure := false
+## Array of all traversed block world coordinates.
 var steps_traversed: PackedVector3Array = []
+## The block the raycast ended on. -1 if [member failure] is true.
 var found_block: int = -1
 
 
+## Returns the last traversed block, or what the raycast collided with.
 func get_collision_point() -> Vector3:
 	if steps_traversed.is_empty():
 		return Vector3.ONE * -1
 	return steps_traversed[steps_traversed.size() - 1]
 
 
+## Returns a vector whose components are the signs of the input vector.
+## No components can be 0.
 static func vec_sign(vec: Vector3) -> Vector3:
 	var signx := signf(vec.x)
 	var signy := signf(vec.y)
@@ -24,6 +33,7 @@ static func vec_sign(vec: Vector3) -> Vector3:
 	)
 
 
+## Returns the index of the smallest component in a [Vector3].
 static func vec_argmin(vec: Vector3) -> int:
 	var minimal := vec.x
 	var index := 0
@@ -40,6 +50,12 @@ static func vec_argmin(vec: Vector3) -> int:
 # ignore the grid variable after the start. it is not representative of the
 # raycast's position after the prep phase.
 # current impl goes through block edges. groaning in pain and crying.
+## Casts a fast ray through the world and returns a [BlockRaycast] instance of the
+## results.
+## Based on the algoritm found [url=https://gamedev.stackexchange.com/a/203825]here[/url].
+## The current implementation has the ray sometimes move diagonally through blocks.
+## It can also target the blocks behind the raycast in certain situations.
+## Further improvements are needed.
 static func cast_ray_fast(
 		start_position: Vector3,
 		step: Vector3,
@@ -68,7 +84,6 @@ static func cast_ray_fast(
 			rc.steps_traversed = steps_storage
 			rc.xyz_axis = axis
 			rc.found_block = block
-			rc.position = traversed
 			return rc
 		steps[axis] += reciprocal[axis]
 
@@ -79,6 +94,11 @@ static func cast_ray_fast(
 
 # uses actual nodes and godot collision detection
 # slow and doesn't work either.
+## @experimental
+## Casts a ray through the block world and returns a [BlockRaycast] instance
+## of the results.
+## Intended as an experiment. Still has issues of [method cast_ray_fast] and
+## is much less performant due to using Godot collisions and [BlockCollisionMaker]s.
 static func cast_ray_stupid(
 		start_position: Vector3,
 		direction: Vector3,
@@ -136,7 +156,7 @@ func _to_string() -> String:
 	return ("BlockRaycast[ "
 			+ "failure: " + str(failure)
 			+ ", xyz_axis: " + str(xyz_axis)
-			+ ", position: " + str(position)
+			#+ ", position: " + str(position)
 			+ ", found_block: " + str(found_block)
 			+ ", steps_traversed: " + str(steps_traversed)
 			+ " ]")
