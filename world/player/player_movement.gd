@@ -40,8 +40,8 @@ func _input(event: InputEvent) -> void:
 				if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 				else Input.MOUSE_MODE_CAPTURED)
 	elif event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
-		var raycast := BlockRaycast.cast_ray_fast(
-				camera.global_position, -camera.global_basis.z, 9, world)
+		var raycast := BlockRaycast.cast_ray_fast_vh(
+				camera.global_position, -camera.global_basis.z.normalized(), 9, world)
 		print(raycast)
 		if not raycast.failure:
 			#world.place_block(raycast.get_collision_point(), BlockTypes.AIR)
@@ -62,8 +62,8 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	var raycast := BlockRaycast.cast_ray_fast(
-			camera.global_position, -camera.global_basis.z, 9, world)
+	var raycast := BlockRaycast.cast_ray_fast_vh(
+			camera.global_position, -camera.global_basis.z.normalized(), 9, world)
 	if raycast.failure:
 		return
 	var mesh := MeshInstance3D.new()

@@ -46,6 +46,10 @@ static func vec_argmin(vec: Vector3) -> int:
 	return index
 
 
+static func fraction(x: float) -> float:
+	return x - floorf(x)
+
+
 # https://gamedev.stackexchange.com/a/203825
 # ignore the grid variable after the start. it is not representative of the
 # raycast's position after the prep phase.
@@ -60,7 +64,8 @@ static func cast_ray_fast(
 		start_position: Vector3,
 		step: Vector3,
 		steps_count: int,
-		world: World) -> BlockRaycast:
+		world: World
+) -> BlockRaycast:
 	if Input.is_action_just_released("ui_left"):
 		breakpoint
 
@@ -89,6 +94,70 @@ static func cast_ray_fast(
 
 	rc.failure = true
 	rc.steps_traversed = steps_storage
+	return rc
+
+
+static func cast_ray_fast_vh(
+		start_position: Vector3,
+		direction: Vector3,
+		max_distance: int,
+		world: World,
+) -> BlockRaycast:
+	const BIGNUM = 999999999.0
+	
+	var rc := BlockRaycast.new()
+	
+	var v1 := start_position
+	var v2 := start_position + direction * max_distance
+	
+	var current_bpos := Vector3(Vector3i(v1))
+	var bid := 0
+	var bnormal := Vector3i()
+	var step_dir := -1
+	
+	var vd := Vector3(
+		signf(v2.x - v1.x),
+		signf(v2.y - v1.y),
+		signf(v2.z - v1.z),
+	)
+	var vdelta := Vector3(
+		minf(vd.x / (v2.x - v1.x), BIGNUM) if vd.x != 0 else BIGNUM,
+		minf(vd.y / (v2.y - v1.y), BIGNUM) if vd.y != 0 else BIGNUM,
+		minf(vd.z / (v2.z - v1.z), BIGNUM) if vd.z != 0 else BIGNUM,
+	)
+	var vmax := Vector3(
+		vdelta.x * (1.0 - fraction(v1.x)) if vd.x > 0 else vdelta.x * fraction(v1.x),
+		vdelta.y * (1.0 - fraction(v1.y)) if vd.y > 0 else vdelta.y * fraction(v1.y),
+		vdelta.z * (1.0 - fraction(v1.z)) if vd.z > 0 else vdelta.z * fraction(v1.z),
+	)
+	
+	while not (vmax.x > 1 and vmax.y > 1 and vmax.z > 1):
+		var resbid := world.get_block(current_bpos)
+		rc.steps_traversed.append(current_bpos)
+		if resbid != BlockTypes.INVALID_BLOCK_ID and resbid != BlockTypes.AIR:
+			rc.found_block = resbid
+			return rc
+		
+		if vmax.x < vmax.y:
+			if vmax.x < vmax.z:
+				current_bpos.x += vd.x
+				vmax.x += vdelta.x
+				step_dir = 0
+			else:
+				current_bpos.z += vd.z
+				vmax.z += vdelta.z
+				step_dir = 2
+		else:
+			if vmax.y < vmax.z:
+				current_bpos.y += vd.y
+				vmax.y += vdelta.y
+				step_dir = 1
+			else:
+				current_bpos.z += vd.z
+				vmax.z += vdelta.z
+				step_dir = 2
+	
+	rc.failure = true
 	return rc
 
 

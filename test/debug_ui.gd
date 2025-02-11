@@ -33,21 +33,16 @@ func get_text() -> String:
 
 
 func get_raycast_text() -> String:
-	var raycast := BlockRaycast.cast_ray_fast(camera.global_position, -camera.global_basis.z, 9, world)
-	#if Input.is_action_just_pressed("ui_focus_next"):
-		#db_disp_rc(camera.global_position, -camera.global_basis.z, Color.WHITE)
-		#db_disp_rc(camera.global_position, -camera.global_basis.z * 20, Color(1, 1, 1, 0.05))
+	var raycast := BlockRaycast.cast_ray_fast_vh(camera.global_position, -camera.global_basis.z.normalized(), 9, world)
+	if Input.is_action_just_pressed("ui_focus_next"):
+		db_disp_rc(camera.global_position, -camera.global_basis.z, Color.WHITE)
+		db_disp_rc(camera.global_position, -camera.global_basis.z * 20, Color(1, 1, 1, 0.05))
 		#db_disp_rc(camera.global_position, raycast._debug_data["pre"]["reciprocal"], Color(0.0, 1.0, 0.0, 0.05))
 		#db_disp_recta(raycast._debug_data["pre"]["grid"] + Vector3.ONE * 0.5, Vector3.ONE * 0.75, Color(1.0, 0.0, 1.0, 0.3))
 		#var prevstep: Vector3 = raycast._debug_data["pre"]["steps"]
-		#var prevtrav := camera.global_position
-		#for step: Dictionary in raycast._debug_data["steps"]:
-			##db_disp_rc(step["grid"] + Vector3.ONE * 0.5, Vector3(0, 0.1, 0), Color(1, 1, 0, 0.1))
-			#db_disp_recta(step["grid"] + Vector3.ONE * 0.5, Vector3.ONE, Color(1, 1, 0, 0.2))
-			#db_disp_rc(step["steps"] + camera.global_position, prevstep - step["steps"], Color(1.0, 0.0, 1.0, 0.5))
-			#prevstep = step["steps"]
-			#db_disp_rc(step["traversed"],prevtrav - step["traversed"], Color(0.0, 1.0, 1.0, 0.5))
-			#prevtrav = step["traversed"]
+		var prevtrav := camera.global_position
+		for step in raycast.steps_traversed:
+			db_disp_recta(step + Vector3.ONE * 0.5, Vector3.ONE * 0.8, Color(1, 1, 1, 0.1))
 	if Input.is_action_just_pressed("ui_text_toggle_insert_mode"):
 		rc_label.visible = not rc_label.visible
 	return (

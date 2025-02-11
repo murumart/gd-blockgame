@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://klx8164wmk5q"]
+[gd_scene load_steps=32 format=3 uid="uid://klx8164wmk5q"]
 
 [ext_resource type="Script" path="res://addons/simple_free_look_camera/camera.gd" id="1_8mts2"]
 [ext_resource type="Script" path="res://world/chunks/chunk_loader.gd" id="2_0dstt"]
@@ -96,15 +96,23 @@ mode = 0
 
 [sub_resource type="Resource" id="Resource_ajhku"]
 script = ExtResource("5_vb04r")
-valem = 2
+valem = 1
 frequency = 0.01
 amplitude = 1.0
 position_component = 0
 mode = 0
 
+[sub_resource type="Resource" id="Resource_mg5fr"]
+script = ExtResource("5_vb04r")
+valem = 1
+frequency = 0.001
+amplitude = 500.0
+position_component = 0
+mode = 0
+
 [sub_resource type="Resource" id="Resource_64ao3"]
 script = ExtResource("6_atk01")
-layers = Array[ExtResource("5_vb04r")]([SubResource("Resource_x0tl2"), SubResource("Resource_ajhku")])
+layers = Array[ExtResource("5_vb04r")]([SubResource("Resource_x0tl2"), SubResource("Resource_ajhku"), SubResource("Resource_mg5fr")])
 block_layers = SubResource("Resource_dp7rm")
 addons = Array[ExtResource("2_ql7nl")]([SubResource("Resource_4uu4d")])
 ignore_as_addon = 3
@@ -151,7 +159,7 @@ camera = NodePath("../Player/CameraPivot/Camera3D")
 world = NodePath("../World")
 
 [node name="Player" parent="." node_paths=PackedStringArray("world") instance=ExtResource("6_c0nql")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 10, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 550, 0)
 world = NodePath("../World")
 
 [node name="Control" type="Control" parent="Player/CameraPivot/Camera3D" index="0"]
