@@ -22,8 +22,6 @@ const NORMAL_TO_DIRECTION := {
 
 static var chunk_mesh_threads: Array[ChunkMeshThread] = [
 	ChunkMeshThread.new(),
-	ChunkMeshThread.new(),
-
 ]
 var worldless_mesh := true
 

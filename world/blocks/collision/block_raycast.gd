@@ -50,53 +50,9 @@ static func fraction(x: float) -> float:
 	return x - floorf(x)
 
 
-# https://gamedev.stackexchange.com/a/203825
-# ignore the grid variable after the start. it is not representative of the
-# raycast's position after the prep phase.
-# current impl goes through block edges. groaning in pain and crying.
 ## Casts a fast ray through the world and returns a [BlockRaycast] instance of the
 ## results.
-## Based on the algoritm found [url=https://gamedev.stackexchange.com/a/203825]here[/url].
-## The current implementation has the ray sometimes move diagonally through blocks.
-## It can also target the blocks behind the raycast in certain situations.
-## Further improvements are needed.
-static func cast_ray_fast(
-		start_position: Vector3,
-		step: Vector3,
-		steps_count: int,
-		world: World
-) -> BlockRaycast:
-	if Input.is_action_just_released("ui_left"):
-		breakpoint
-
-	var rc := BlockRaycast.new()
-	var steps_storage: PackedVector3Array = []
-
-	var signv := vec_sign(step)
-	var reciprocal := Vector3.ONE / step.abs()
-	var grid := start_position.floor()
-	var steps := (signv + Vector3.ONE) * 0.5 - (start_position - grid) / step
-
-	for i in steps_count:
-		var axis: int = vec_argmin(steps)
-		#grid[axis] += signv[axis] this isnät needed anywhere
-		var traversed := start_position + step * steps[axis]
-		var t_floor := traversed.floor()
-		steps_storage.append(t_floor)
-		var block := _get_block(t_floor, world)
-		if block != BlockTypes.AIR:
-			rc.failure = false
-			rc.steps_traversed = steps_storage
-			rc.xyz_axis = axis
-			rc.found_block = block
-			return rc
-		steps[axis] += reciprocal[axis]
-
-	rc.failure = true
-	rc.steps_traversed = steps_storage
-	return rc
-
-
+## Based on the algoritm found [url=https://github.com/StanislavPetrovV/Minecraft/blob/main/voxel_handler.py]here[/url].
 static func cast_ray_fast_vh(
 		start_position: Vector3,
 		direction: Vector3,
@@ -110,7 +66,7 @@ static func cast_ray_fast_vh(
 	var v1 := start_position
 	var v2 := start_position + direction * max_distance
 	
-	var current_bpos := Vector3(Vector3i(v1))
+	var current_bpos := v1.floor()
 	var bid := 0
 	var bnormal := Vector3i()
 	var step_dir := -1
@@ -136,6 +92,7 @@ static func cast_ray_fast_vh(
 		rc.steps_traversed.append(current_bpos)
 		if resbid != BlockTypes.INVALID_BLOCK_ID and resbid != BlockTypes.AIR:
 			rc.found_block = resbid
+			rc.xyz_axis = step_dir
 			return rc
 		
 		if vmax.x < vmax.y:
