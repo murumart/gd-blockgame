@@ -93,14 +93,17 @@ func _get_chunk_poses_to_load() -> Array[Vector3]:
 		if not loader.enabled:
 			continue
 		var chunk_pos := World.world_pos_to_chunk_pos(loader.global_position + _world.world_position)
-		toreturn.append_array(WorldGenerator.get_diamond(chunk_pos, loader.load_distance))
-		var yrange := roundi(loader.load_distance / 8.0)
-		for y in range(-yrange, yrange + 1):
-			if y == 0:
-				continue
-			toreturn.append_array(WorldGenerator.get_diamond(
-					Vector3(chunk_pos.x, chunk_pos.y + y, chunk_pos.z),
-					maxi(loader.load_distance - absi(y) * 6, 1)))
+		for y in range(-6, 6):
+			chunk_pos.y = y
+			toreturn.append_array(WorldGenerator.get_diamond(chunk_pos, loader.load_distance))
+		#var yrange := roundi(loader.load_distance / 8.0)
+		#for y in range(-yrange, yrange + 1):
+			#if y == 0:
+				#continue
+			#toreturn.append_array(WorldGenerator.get_diamond(
+					#Vector3(chunk_pos.x, chunk_pos.y + y, chunk_pos.z),
+					#maxi(loader.load_distance - absi(y) * 6, 1)))
+		
 	return toreturn
 
 
@@ -113,12 +116,12 @@ func get_chunk_poses_to_load_sorted() -> PackedVector3Array:
 		if not loader.enabled:
 			continue
 		chunk_pos = World.world_pos_to_chunk_pos(loader.global_position + _world.world_position)
-	toreturn.sort_custom(_sort_poses_by_distance_from_loader.bind(chunk_pos))
+	toreturn.sort_custom(_compare_distances_from_center.bind(chunk_pos))
 	#print("getting loadable chnks took ", Time.get_ticks_msec() - time, " ms")
 	return toreturn
 
 
-func _sort_poses_by_distance_from_loader(pos1: Vector3, pos2: Vector3, centerpos: Vector3) -> bool:
+func _compare_distances_from_center(pos1: Vector3, pos2: Vector3, centerpos: Vector3) -> bool:
 	var dis1 := pos1.distance_squared_to(centerpos)
 	var dis2 := pos2.distance_squared_to(centerpos)
 	#print("comparing ", dis1, " ", dis2, " ", pos1, " ", pos2, " against ", centerpos)

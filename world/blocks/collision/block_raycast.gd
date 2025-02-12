@@ -5,7 +5,9 @@ class_name BlockRaycast extends RefCounted
 
 ## The axis of the last traversal.
 var xyz_axis: int
-## Whether the raycast found a block or not.
+## Whether the last traversal increased or decreased the last [member xyz_axis] axis coordinate.
+var axis_direction: int = 0
+## True if the raycast didn't find a block.
 var failure := false
 ## Array of all traversed block world coordinates.
 var steps_traversed: PackedVector3Array = []
@@ -18,32 +20,6 @@ func get_collision_point() -> Vector3:
 	if steps_traversed.is_empty():
 		return Vector3.ONE * -1
 	return steps_traversed[steps_traversed.size() - 1]
-
-
-## Returns a vector whose components are the signs of the input vector.
-## No components can be 0.
-static func vec_sign(vec: Vector3) -> Vector3:
-	var signx := signf(vec.x)
-	var signy := signf(vec.y)
-	var signz := signf(vec.z)
-	return Vector3(
-			signx if signx != 0.0 else 1.0,
-			signy if signy != 0.0 else 1.0,
-			signz if signz != 0.0 else 1.0,
-	)
-
-
-## Returns the index of the smallest component in a [Vector3].
-static func vec_argmin(vec: Vector3) -> int:
-	var minimal := vec.x
-	var index := 0
-	if vec.y < minimal:
-		minimal = vec.y
-		index = 1
-	if vec.z < minimal:
-		minimal = vec.z
-		index = 2
-	return index
 
 
 static func fraction(x: float) -> float:
@@ -69,7 +45,8 @@ static func cast_ray_fast_vh(
 	var current_bpos := v1.floor()
 	var bid := 0
 	var bnormal := Vector3i()
-	var step_dir := -1
+	var step_dir := 0
+	var step_sign := 0
 	
 	var vd := Vector3(
 		signf(v2.x - v1.x),
@@ -93,6 +70,7 @@ static func cast_ray_fast_vh(
 		if resbid != BlockTypes.INVALID_BLOCK_ID and resbid != BlockTypes.AIR:
 			rc.found_block = resbid
 			rc.xyz_axis = step_dir
+			rc.axis_direction = step_sign
 			return rc
 		
 		if vmax.x < vmax.y:
@@ -100,75 +78,25 @@ static func cast_ray_fast_vh(
 				current_bpos.x += vd.x
 				vmax.x += vdelta.x
 				step_dir = 0
+				step_sign = signi(vd.x)
 			else:
 				current_bpos.z += vd.z
 				vmax.z += vdelta.z
 				step_dir = 2
+				step_sign = signi(vd.z)
 		else:
 			if vmax.y < vmax.z:
 				current_bpos.y += vd.y
 				vmax.y += vdelta.y
 				step_dir = 1
+				step_sign = signi(vd.y)
 			else:
 				current_bpos.z += vd.z
 				vmax.z += vdelta.z
 				step_dir = 2
+				step_sign = signi(vd.z)
 	
 	rc.failure = true
-	return rc
-
-
-# uses actual nodes and godot collision detection
-# slow and doesn't work either.
-## @experimental
-## Casts a ray through the block world and returns a [BlockRaycast] instance
-## of the results.
-## Intended as an experiment. Still has issues of [method cast_ray_fast] and
-## is much less performant due to using Godot collisions and [BlockCollisionMaker]s.
-static func cast_ray_stupid(
-		start_position: Vector3,
-		direction: Vector3,
-		steps: int,
-		world: World) -> BlockRaycast:
-
-	var rc := BlockRaycast.new()
-	rc.failure = true
-	direction = direction.normalized()
-
-	var collision_raycast := RayCast3D.new()
-	var block_collisions := BlockCollisionMaker.new()
-	block_collisions.world = world
-	block_collisions.collision_layer = 0b00001
-	world.add_child(collision_raycast)
-	world.add_child(block_collisions)
-
-	collision_raycast.global_position = start_position
-	collision_raycast.target_position = Vector3.ZERO
-	collision_raycast.collision_mask = 0b00001
-
-	for i in steps:
-		block_collisions.recalculate_block_collisions()
-		collision_raycast.force_raycast_update()
-
-		var grid_position := (collision_raycast.global_position
-				+ collision_raycast.target_position).floor()
-		rc.steps_traversed.append(grid_position)
-
-		var collider := collision_raycast.get_collider()
-		if is_instance_valid(collider):
-			collider = collider as CollisionShape3D
-			var block := world.get_block(grid_position)
-			rc.failure = false
-			rc.found_block = block
-			break
-
-		block_collisions.global_position = (collision_raycast.global_position
-				+ collision_raycast.target_position)
-		collision_raycast.target_position += direction
-
-	collision_raycast.queue_free()
-	block_collisions.queue_free()
-
 	return rc
 
 
@@ -182,6 +110,7 @@ func _to_string() -> String:
 	return ("BlockRaycast[ "
 			+ "failure: " + str(failure)
 			+ ", xyz_axis: " + str(xyz_axis)
+			+ ", axis_direction: " + str(axis_direction)
 			#+ ", position: " + str(position)
 			+ ", found_block: " + str(found_block)
 			+ ", steps_traversed: " + str(steps_traversed)

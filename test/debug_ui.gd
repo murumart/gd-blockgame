@@ -9,6 +9,7 @@ class_name DebugUI extends Control
 @onready var recenterer: Node = world.get_node("Recenterer")
 
 func _physics_process(_delta: float) -> void:
+	if not visible: return
 	label.text = get_text()
 	rc_label.text = get_raycast_text()
 
