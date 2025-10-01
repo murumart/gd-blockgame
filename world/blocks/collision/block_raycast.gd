@@ -36,18 +36,18 @@ static func cast_ray_fast_vh(
 		world: World,
 ) -> BlockRaycast:
 	const BIGNUM = 999999999.0
-	
+
 	var rc := BlockRaycast.new()
-	
+
 	var v1 := start_position
 	var v2 := start_position + direction * max_distance
-	
+
 	var current_bpos := v1.floor()
 	var bid := 0
 	var bnormal := Vector3i()
 	var step_dir := 0
 	var step_sign := 0
-	
+
 	var vd := Vector3(
 		signf(v2.x - v1.x),
 		signf(v2.y - v1.y),
@@ -63,7 +63,7 @@ static func cast_ray_fast_vh(
 		vdelta.y * (1.0 - fraction(v1.y)) if vd.y > 0 else vdelta.y * fraction(v1.y),
 		vdelta.z * (1.0 - fraction(v1.z)) if vd.z > 0 else vdelta.z * fraction(v1.z),
 	)
-	
+
 	while not (vmax.x > 1 and vmax.y > 1 and vmax.z > 1):
 		var resbid := world.get_block(current_bpos)
 		rc.steps_traversed.append(current_bpos)
@@ -72,7 +72,7 @@ static func cast_ray_fast_vh(
 			rc.xyz_axis = step_dir
 			rc.axis_direction = step_sign
 			return rc
-		
+
 		if vmax.x < vmax.y:
 			if vmax.x < vmax.z:
 				current_bpos.x += vd.x
@@ -95,7 +95,7 @@ static func cast_ray_fast_vh(
 				vmax.z += vdelta.z
 				step_dir = 2
 				step_sign = signi(vd.z)
-	
+
 	rc.failure = true
 	return rc
 

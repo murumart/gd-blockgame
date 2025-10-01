@@ -46,7 +46,7 @@ func _threaded_generation() -> void:
 		#print("--- GEN waiting")
 		_semaph.wait()
 		#print("--- GEN starting with chunk at ",
-				#World.world_pos_to_chunk_pos(_generating_chunk_position))
+			#World.world_pos_to_chunk_pos(_generating_chunk_position))
 		assert(is_instance_valid(_generating_chunk))
 
 		for y in Chunk.SIZE.y:
@@ -103,7 +103,7 @@ func _get_chunk_poses_to_load() -> Array[Vector3]:
 			#toreturn.append_array(WorldGenerator.get_diamond(
 					#Vector3(chunk_pos.x, chunk_pos.y + y, chunk_pos.z),
 					#maxi(loader.load_distance - absi(y) * 6, 1)))
-		
+
 	return toreturn
 
 
