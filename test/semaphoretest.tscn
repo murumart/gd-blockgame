@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://3hdqrra6tnsc"]
-
-[ext_resource type="Script" path="res://test/semaphoretest.gd" id="1_ehwcw"]
-
-[node name="Semaphoretest" type="Node"]
-script = ExtResource("1_ehwcw")

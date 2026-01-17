@@ -1,8 +1,0 @@
-[gd_resource type="Resource" script_class="BlockType" load_steps=2 format=3 uid="uid://ciwf2j5l34x7m"]
-
-[ext_resource type="Script" path="res://world/blocks/block_type.gd" id="1_jatnq"]
-
-[resource]
-script = ExtResource("1_jatnq")
-mesh_type = 0
-atlas_coordinates = [Vector2(3, 0)]
