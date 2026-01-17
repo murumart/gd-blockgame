@@ -16,14 +16,19 @@ func _ready() -> void:
 	rs.instance_set_scenario(instance, world.scenario)
 	rs.instance_set_base(instance, mesh)
 
-	var vertices: PackedVector3Array = [
-		Vector3(1, 0, 0),
-		Vector3(-1, 0, 0),
-		Vector3(0, 1, 0),
-	]
-	var indices: PackedInt32Array = [
-		0, 1, 2
-	]
+	var vertices: PackedVector3Array = []
+	var indices: PackedInt32Array = []
+
+	const testsize = 1000
+
+	for i in testsize:
+		vertices.append(Vector3(randf() * 4, 0, randf() * 4))
+		vertices.append(Vector3(randf() * -4, 0, randf() * 4))
+		vertices.append(Vector3(0, randf() * 1, randf() * 4))
+
+		indices.append(0)
+		indices.append(1)
+		indices.append(2)
 
 	var arrays := []
 	arrays.resize(ArrayMesh.ARRAY_MAX)
