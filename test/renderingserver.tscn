@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://bge5fmtk4w5kp"]
+
+[ext_resource type="Script" uid="uid://cn24jw152bjdk" path="res://test/renderingserver.gd" id="1_ff1h1"]
+[ext_resource type="Script" uid="uid://bqu8wqj3go0fy" path="res://addons/simple_free_look_camera/camera.gd" id="1_y82t8"]
+[ext_resource type="Texture2D" uid="uid://l5nq2ng7ln3g" path="res://gui/icon.svg" id="2_27r55"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_y82t8"]
+size = Vector2(900, 900)
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_ff1h1")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.880055, 0.47487175, 0, -0.47487175, 0.880055, 0, 2.6720986, 2.2171307)
+script = ExtResource("1_y82t8")
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_y82t8")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.57013273, 3.0491703, 2.0354736)
+light_energy = 1.53
+omni_range = 17.498
+omni_attenuation = 0.277
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(0.8843611, 0, 0.46680343, 0, 1, 0, -0.46680343, 0, 0.8843611, -3.674913, 0.7458657, 0)
+texture = ExtResource("2_27r55")

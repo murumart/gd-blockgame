@@ -1,13 +1,13 @@
 [gd_scene load_steps=25 format=3 uid="uid://klx8164wmk5q"]
 
-[ext_resource type="Script" path="res://addons/simple_free_look_camera/camera.gd" id="1_8mts2"]
-[ext_resource type="Script" path="res://world/chunks/chunk_loader.gd" id="2_0dstt"]
+[ext_resource type="Script" uid="uid://bqu8wqj3go0fy" path="res://addons/simple_free_look_camera/camera.gd" id="1_8mts2"]
+[ext_resource type="Script" uid="uid://cdy3g3dy8xq07" path="res://world/chunks/chunk_loader.gd" id="2_0dstt"]
 [ext_resource type="PackedScene" uid="uid://xv0bwgrtwil2" path="res://world/world.tscn" id="2_3n2ij"]
-[ext_resource type="Script" path="res://world/generation/generator_settings.gd" id="2_ql7nl"]
-[ext_resource type="Script" path="res://world/generation/noises/noise_layer.gd" id="3_cgv5o"]
-[ext_resource type="Script" path="res://world/blocks/collision/block_collision_maker.gd" id="3_pytwc"]
+[ext_resource type="Script" uid="uid://csv3d1h7bwpym" path="res://world/generation/generator_settings.gd" id="2_ql7nl"]
+[ext_resource type="Script" uid="uid://dfrtfv5jfh0ay" path="res://world/generation/noises/noise_layer.gd" id="3_cgv5o"]
+[ext_resource type="Script" uid="uid://cvl6gu6ju7m3i" path="res://world/blocks/collision/block_collision_maker.gd" id="3_pytwc"]
 [ext_resource type="PackedScene" uid="uid://bl3q0dsg4sfcr" path="res://test/debug_ui.tscn" id="4_b72s5"]
-[ext_resource type="Script" path="res://world/generation/noises/noise_layers.gd" id="4_w2agd"]
+[ext_resource type="Script" uid="uid://oajuucoorm06" path="res://world/generation/noises/noise_layers.gd" id="4_w2agd"]
 [ext_resource type="PackedScene" uid="uid://mnjblgt5ek5" path="res://world/player/player.tscn" id="6_c0nql"]
 [ext_resource type="PackedScene" uid="uid://cj2qc62mw8m6s" path="res://world/player/player_block_interactor.tscn" id="11_lehkx"]
 [ext_resource type="PackedScene" uid="uid://cgc4qbvmjofvg" path="res://test/raycast_test.tscn" id="13_votl8"]
@@ -75,9 +75,6 @@ layers = Array[ExtResource("3_cgv5o")]([SubResource("Resource_o3njb")])
 base_block = 1
 max_y = 30
 y_distance_reduction = 0.015
-addons = Array[ExtResource("2_ql7nl")]([])
-ignore_as_addon = 3
-ignore_from_addons = 3
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k3wvy"]
 shading_mode = 0
