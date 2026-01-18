@@ -21,7 +21,8 @@ func _create_chunk_render(pos: Vector3i) -> void:
 	assert(is_instance_valid(world))
 	assert(pos not in meshes)
 	assert(pos not in instances)
-	print("ChunkRenderer::_create_chunk_render : creating chunk render at ", pos)
+	var start := Time.get_ticks_msec()
+	#print("ChunkRenderer::_create_chunk_render : creating chunk render at ", pos)
 	var cs := Chunks.CHUNK_SIZE
 
 	var instance := rs.instance_create()
@@ -77,6 +78,7 @@ func _create_chunk_render(pos: Vector3i) -> void:
 	if vx.size() == 0:
 		return
 	rs.mesh_add_surface_from_arrays(mesh, rs.PRIMITIVE_TRIANGLES, ia)
+	print("ChunkRenderer::_create_chunk_render : chunk meshing took ", Time.get_ticks_msec() - start, " ms")
 
 
 func _append_face_z_pos(
