@@ -24,6 +24,7 @@ var chunks_to_mesh: Array[Vector3i]
 func _init(world_: World) -> void:
 	world = world_
 	scenario = world.get_world_3d().scenario
+	world.chunks.chunk_destroyed.connect(_on_chunk_destroyed)
 
 
 func cleanup() -> void:
@@ -48,7 +49,7 @@ func check_meshing() -> void:
 			chunks_to_mesh.pop_back()
 			if chunks_to_mesh.is_empty(): return
 			cpos = chunks_to_mesh[-1]
-		print("ChunkRenderer::check_meshing : trying meshing chunk at ", cpos)
+		#print("ChunkRenderer::check_meshing : trying meshing chunk at ", cpos)
 
 		assert(world.chunks.flags[cpos] & Chunks.FLAG_NEEDS_MESHING != 0)
 		chunks_to_mesh.pop_back()
@@ -56,9 +57,8 @@ func check_meshing() -> void:
 			_create_chunk_render(cpos)
 		mesh_chunk(meshes[cpos], world.chunks.adjacency_maps[cpos])
 		world.chunks.flags[cpos] &= ~Chunks.FLAG_NEEDS_MESHING
-		print("ChunkRenderer::check_meshing : meshed chunk at ", cpos)
+		#print("ChunkRenderer::check_meshing : meshed chunk at ", cpos)
 		to_mesh -= 1
-
 
 
 func _create_chunk_render(pos: Vector3i) -> void:
@@ -81,6 +81,15 @@ func _create_chunk_render(pos: Vector3i) -> void:
 	instances[pos] = instance
 	meshes[pos] = mesh
 	#print("ChunkRenderer::_create_chunk_render : chunk meshing took ", Time.get_ticks_usec() - start, " us")
+
+
+func _on_chunk_destroyed(pos: Vector3i) -> void:
+	if pos in instances:
+		print("ChunkRenderer::_on_chunk_destroyed : a rendered chunk at ", pos, " was destroyed, freeing")
+		rs.free_rid(instances[pos])
+		instances.erase(pos)
+		rs.free_rid(meshes[pos])
+		meshes.erase(pos)
 
 
 func mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:

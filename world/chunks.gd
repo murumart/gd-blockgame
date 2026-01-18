@@ -1,6 +1,7 @@
 class_name Chunks
 
 signal chunk_created(pos: Vector3i)
+signal chunk_destroyed(pos: Vector3i)
 
 const C_CHUNK_SIZE := Vector3i(16, 16, 16)
 const C_BLOCKS_PER_CHUNK := C_CHUNK_SIZE.x * C_CHUNK_SIZE.y * C_CHUNK_SIZE.z
@@ -17,10 +18,42 @@ var blocks: Dictionary[Vector3i, PackedByteArray]
 var flags: Dictionary[Vector3i, int]
 var occupancy_maps: Dictionary[Vector3i, Array]
 var adjacency_maps: Dictionary[Vector3i, Array]
+var chunk_load_radius := 6
 
 
 func _init() -> void:
 	print("Chunks::_init : created chunks manager")
+
+
+func load_chunks(cpos: Vector3i, load_radius: int = chunk_load_radius) -> void:
+	print("Chunks::load_chunks : loading chunks")
+	var checkpos := cpos + Vector3i(-load_radius, -load_radius, -load_radius)
+	var time := Time.get_ticks_msec()
+	#for z in load_radius * 2 + 1: for y in load_radius * 2 + 1: for x in load_radius * 2 + 1:
+	while checkpos.z - cpos.z <= load_radius:
+		checkpos.y = cpos.y - load_radius
+		while checkpos.y - cpos.y <= load_radius:
+			checkpos.x = cpos.x - load_radius
+			while checkpos.x - cpos.x <= load_radius:
+				var dist := (checkpos).distance_squared_to(cpos)
+				#print("Chunks::load_chunks : distance from center at %s: %s" % [checkpos, dist])
+				if dist <= load_radius * load_radius:
+					_load_chunk.call_deferred(checkpos)
+				checkpos.x += 1
+			checkpos.y += 1
+		checkpos.z += 1
+	print("Chunks::load_chunks : took ", Time.get_ticks_msec() - time, " ms")
+
+
+func unload_chunks(center: Vector3i, load_radius: int = chunk_load_radius) -> void:
+	for cpos in blocks:
+		if center.distance_squared_to(cpos) > load_radius * load_radius:
+			destroy_chunk(cpos)
+
+
+func _load_chunk(cpos: Vector3i) -> void:
+	if cpos not in blocks:
+		create_chunk(cpos)
 
 
 func create_chunk(position: Vector3i) -> void:
@@ -53,6 +86,17 @@ func create_chunk(position: Vector3i) -> void:
 	adjacency_maps[position] = adj
 
 	chunk_created.emit(position)
+
+
+func destroy_chunk(position: Vector3i) -> void:
+	assert(position in blocks)
+	assert(position in flags)
+
+	blocks.erase(position)
+	flags.erase(position)
+	occupancy_maps.erase(position)
+	adjacency_maps.erase(position)
+	chunk_destroyed.emit(position)
 
 
 func get_chunks_to_mesh(poses: Array[Vector3i]) -> void:

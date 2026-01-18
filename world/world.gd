@@ -12,9 +12,9 @@ var chunk_renderer: ChunkRenderer
 func _ready() -> void:
 	chunks = Chunks.new()
 	chunk_renderer = ChunkRenderer.new(self)
-	var b := 3
-	for x in range(-b, b): for y in range(-b, b): for z in range(-b, b):
-		chunks.create_chunk(Vector3i(x, y, z))
+	#var b := 3
+	#for x in range(-b, b): for y in range(-b, b): for z in range(-b, b):
+	#	chunks.create_chunk(Vector3i(x, y, z))
 
 
 func _exit_tree() -> void:
@@ -31,6 +31,12 @@ func _process(delta: float) -> void:
 	chunk_renderer.check_meshing()
 
 
+var _last_center_cpos := Vector3i.MIN
 func tick() -> void:
-	chunks.get_chunks_to_mesh(chunk_renderer.chunks_to_mesh)
-	chunk_renderer.display_target_update(Vector3i(chunk_load_center.position) / Chunks.CHUNK_SIZE)
+	var center_cpos := Vector3i(chunk_load_center.position) / Chunks.CHUNK_SIZE
+	if center_cpos != _last_center_cpos:
+		_last_center_cpos = center_cpos
+		chunks.unload_chunks(center_cpos)
+		chunks.load_chunks(center_cpos)
+		chunks.get_chunks_to_mesh(chunk_renderer.chunks_to_mesh)
+		chunk_renderer.display_target_update(center_cpos)
