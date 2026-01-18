@@ -90,7 +90,6 @@ func _mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
 			var line: int = adjdata[axisi][ax + ay * axis[1].x]
 			while line:
 				if line & 1:
-					#vxix = fun.call(vpos.x, vpos.y, vpos.z, vx, ix, ns, vxix)
 					vxix = _append_face(
 						vpos,
 						vtx1, vtx2, vtx3, vtx4,
@@ -150,3 +149,21 @@ static func _append_face(
 	ns.append(normal)
 
 	return vxix + 4
+
+
+static var debruijn_lookup: PackedByteArray = [
+	 0, 47, 1, 56, 48, 27, 2, 60,
+	57, 49, 41, 37, 28, 16, 3, 61,
+	54, 58, 35, 52, 50, 42, 21, 44,
+	38, 32, 29, 23, 17, 11, 4, 62,
+	46, 55, 26, 59, 40, 36, 15, 53,
+	34, 51, 20, 43, 31, 22, 10, 45,
+	25, 39, 14, 33, 19, 30, 9, 24,
+	13, 18, 8, 12, 7, 6, 5, 63
+]
+
+static func ntz(x: int) -> int:
+	var y := x ^ (x - 1)
+	const d := 0x03f79d71b4cb0a89
+	var z := (d * y) >> 58
+	return debruijn_lookup[z]
