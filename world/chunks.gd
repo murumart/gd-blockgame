@@ -42,8 +42,10 @@ func create_chunk(position: Vector3i) -> void:
 
 	var occ: Array[PackedInt64Array]
 	var adj: Array[PackedInt64Array]
+	#var starttime := Time.get_ticks_msec()
 	_generate_occupancy_maps(bd, occ)
 	_generate_adjacency_maps(bd, occ, adj)
+	#print("Chunks::create_chunk : generating maps took ", Time.get_ticks_msec() - starttime, " ms")
 	blocks[position] = bd
 	flags[position] = FLAG_META_DIRTY
 	occupancy_maps[position] = occ
