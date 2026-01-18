@@ -10,6 +10,7 @@ static var BLOCKS_PER_CHUNK := C_BLOCKS_PER_CHUNK
 
 enum {
 	FLAG_META_DIRTY = 0b1,
+	FLAG_NEEDS_MESHING = 0b1000,
 }
 
 var blocks: Dictionary[Vector3i, PackedByteArray]
@@ -42,16 +43,22 @@ func create_chunk(position: Vector3i) -> void:
 
 	var occ: Array[PackedInt64Array]
 	var adj: Array[PackedInt64Array]
-	#var starttime := Time.get_ticks_msec()
+	#var starttime := Time.get_ticks_usec()
 	_generate_occupancy_maps(bd, occ)
+	#print("Chunks::create_chunk : generating occupancy maps took ", Time.get_ticks_usec() - starttime, " us")
 	_generate_adjacency_maps(bd, occ, adj)
-	#print("Chunks::create_chunk : generating maps took ", Time.get_ticks_msec() - starttime, " ms")
 	blocks[position] = bd
-	flags[position] = FLAG_META_DIRTY
+	flags[position] = FLAG_NEEDS_MESHING
 	occupancy_maps[position] = occ
 	adjacency_maps[position] = adj
 
 	chunk_created.emit(position)
+
+
+func get_chunks_to_mesh(poses: Array[Vector3i]) -> void:
+	for p in flags:
+		if flags[p] & FLAG_NEEDS_MESHING and not p in poses:
+			poses.append(p)
 
 
 enum {
@@ -71,8 +78,8 @@ func _generate_occupancy_maps(cblocks: PackedByteArray, occupancy: Array[PackedI
 	for ab: Vector2i in _axes:
 		var occ: PackedInt64Array = []
 		occ.resize(ab.x * ab.y)
-		for a in ab.x: for b in ab.y:
-			occ[a + b * ab.x] = 0 # create the line
+		#for a in ab.x: for b in ab.y:
+		#	occ[a + b * ab.x] = 0 # create the line
 		occupancy.append(occ)
 
 	var bix := 0
@@ -80,14 +87,14 @@ func _generate_occupancy_maps(cblocks: PackedByteArray, occupancy: Array[PackedI
 	for y in CHUNK_SIZE.y: \
 	for x in CHUNK_SIZE.x:
 		var solid := cblocks[bix] != 0
-		if solid:
-			# xy axis, blocks along +z
-			occupancy[ADJ_AXIS_XY][x + y * CHUNK_SIZE.x] |= 1 << z
-			# xz axis, blocks along +y
-			occupancy[ADJ_AXIS_XZ][x + z * CHUNK_SIZE.x] |= 1 << y
-			# yz axis, blocks along +x
-			occupancy[ADJ_AXIS_YZ][y + z * CHUNK_SIZE.y] |= 1 << x
 		bix += 1
+		if not solid: continue
+		# xy axis, blocks along +z
+		occupancy[ADJ_AXIS_XY][x + y * CHUNK_SIZE.x] |= 1 << z
+		# xz axis, blocks along +y
+		occupancy[ADJ_AXIS_XZ][x + z * CHUNK_SIZE.x] |= 1 << y
+		# yz axis, blocks along +x
+		occupancy[ADJ_AXIS_YZ][y + z * CHUNK_SIZE.y] |= 1 << x
 
 	#for a: Array in [[0, "xy"], [1, "xz"], [2, "yz"]]:
 	#	var b := occupancy[a[0]]

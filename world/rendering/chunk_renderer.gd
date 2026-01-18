@@ -3,25 +3,6 @@ class_name ChunkRenderer
 static var rs := RenderingServer
 static var am := Mesh
 
-var world: World
-var scenario: RID
-
-var instances: Dictionary[Vector3i, RID]
-var meshes: Dictionary[Vector3i, RID]
-
-
-func _init(world_: World) -> void:
-	world = world_
-	scenario = world.get_world_3d().scenario
-
-	world.chunks.chunk_created.connect(_create_chunk_render)
-
-
-func cleanup() -> void:
-	meshes.values().map(func(a: RID) -> void: rs.free_rid(a))
-	instances.values().map(func(a: RID) -> void: rs.free_rid(a))
-
-
 static var axes := [
 	[Chunks.ADJ_AXIS_XY, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.y), Vector3i(0, 1, 2), 1],
 	[Chunks.ADJ_AXIS_XZ, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.z), Vector3i(0, 2, 1), 1],
@@ -30,11 +11,61 @@ static var axes := [
 	[Chunks.ADJ_AXIS_XZ + 3, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.z), Vector3i(0, 2, 1), 0],
 	[Chunks.ADJ_AXIS_YZ + 3, Vector2i(Chunks.CHUNK_SIZE.y, Chunks.CHUNK_SIZE.z), Vector3i(1, 2, 0), 0],
 ]
+
+var world: World
+var scenario: RID
+
+var instances: Dictionary[Vector3i, RID]
+var meshes: Dictionary[Vector3i, RID]
+
+var chunks_to_mesh: Array[Vector3i]
+
+
+func _init(world_: World) -> void:
+	world = world_
+	scenario = world.get_world_3d().scenario
+
+
+func cleanup() -> void:
+	meshes.values().map(func(a: RID) -> void: rs.free_rid(a))
+	instances.values().map(func(a: RID) -> void: rs.free_rid(a))
+
+
+var _last_display_target_pos: Vector3i = Vector3i.ONE * -9999999 # weird default so we sort straight away probably
+func display_target_update(pos: Vector3i) -> void:
+	if _last_display_target_pos != pos:
+		chunks_to_mesh.sort_custom(func(a: Vector3i, b: Vector3i) -> bool: return a.distance_squared_to(pos) > b.distance_squared_to(pos))
+	_last_display_target_pos = pos
+
+
+func check_meshing() -> void:
+	var to_mesh := 5
+	while to_mesh:
+		if chunks_to_mesh.is_empty(): return
+		var cpos: Vector3i = chunks_to_mesh[-1]
+		# remove dead queued chunks (assuming there will be)
+		while cpos not in world.chunks.blocks:
+			chunks_to_mesh.pop_back()
+			if chunks_to_mesh.is_empty(): return
+			cpos = chunks_to_mesh[-1]
+		print("ChunkRenderer::check_meshing : trying meshing chunk at ", cpos)
+
+		assert(world.chunks.flags[cpos] & Chunks.FLAG_NEEDS_MESHING != 0)
+		chunks_to_mesh.pop_back()
+		if cpos not in instances:
+			_create_chunk_render(cpos)
+		mesh_chunk(meshes[cpos], world.chunks.adjacency_maps[cpos])
+		world.chunks.flags[cpos] &= ~Chunks.FLAG_NEEDS_MESHING
+		print("ChunkRenderer::check_meshing : meshed chunk at ", cpos)
+		to_mesh -= 1
+
+
+
 func _create_chunk_render(pos: Vector3i) -> void:
 	assert(is_instance_valid(world))
 	assert(pos not in meshes)
 	assert(pos not in instances)
-	var start := Time.get_ticks_usec()
+	#var start := Time.get_ticks_usec()
 	#print("ChunkRenderer::_create_chunk_render : creating chunk render at ", pos)
 
 	var instance := rs.instance_create()
@@ -49,9 +80,7 @@ func _create_chunk_render(pos: Vector3i) -> void:
 
 	instances[pos] = instance
 	meshes[pos] = mesh
-
-	mesh_chunk(mesh, world.chunks.adjacency_maps[pos])
-	print("ChunkRenderer::_create_chunk_render : chunk meshing took ", Time.get_ticks_usec() - start, " us")
+	#print("ChunkRenderer::_create_chunk_render : chunk meshing took ", Time.get_ticks_usec() - start, " us")
 
 
 func mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
