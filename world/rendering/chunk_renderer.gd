@@ -50,11 +50,11 @@ func _create_chunk_render(pos: Vector3i) -> void:
 	instances[pos] = instance
 	meshes[pos] = mesh
 
-	_mesh_chunk(mesh, world.chunks.adjacency_maps[pos])
+	mesh_chunk(mesh, world.chunks.adjacency_maps[pos])
 	print("ChunkRenderer::_create_chunk_render : chunk meshing took ", Time.get_ticks_usec() - start, " us")
 
 
-func _mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
+func mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
 	rs.mesh_clear(mesh)
 
 	var ia: Array
@@ -161,7 +161,7 @@ static var debruijn_lookup: PackedByteArray = [
 	25, 39, 14, 33, 19, 30, 9, 24,
 	13, 18, 8, 12, 7, 6, 5, 63
 ]
-
+# https://stackoverflow.com/a/45225089
 static func ntz(x: int) -> int:
 	var y := x ^ (x - 1)
 	const d := 0x03f79d71b4cb0a89
