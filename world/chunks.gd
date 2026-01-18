@@ -2,7 +2,7 @@ class_name Chunks
 
 signal chunk_created(pos: Vector3i)
 
-const C_CHUNK_SIZE := Vector3i(32, 32, 32)
+const C_CHUNK_SIZE := Vector3i(16, 16, 16)
 const C_BLOCKS_PER_CHUNK := C_CHUNK_SIZE.x * C_CHUNK_SIZE.y * C_CHUNK_SIZE.z
 
 static var CHUNK_SIZE := C_CHUNK_SIZE

@@ -17,6 +17,11 @@ func _init(world_: World) -> void:
 	world.chunks.chunk_created.connect(_create_chunk_render)
 
 
+func cleanup() -> void:
+	meshes.values().map(func(a: RID) -> void: rs.free_rid(a))
+	instances.values().map(func(a: RID) -> void: rs.free_rid(a))
+
+
 static var axes := [
 	[Chunks.ADJ_AXIS_XY, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.y), _append_face_z_pos, Vector3i(0, 1, 2), 1],
 	[Chunks.ADJ_AXIS_XZ, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.z), _append_face_y_pos, Vector3i(0, 2, 1), 1],
@@ -29,9 +34,8 @@ func _create_chunk_render(pos: Vector3i) -> void:
 	assert(is_instance_valid(world))
 	assert(pos not in meshes)
 	assert(pos not in instances)
-	var start := Time.get_ticks_msec()
+	var start := Time.get_ticks_usec()
 	#print("ChunkRenderer::_create_chunk_render : creating chunk render at ", pos)
-	var cs := Chunks.CHUNK_SIZE
 
 	var instance := rs.instance_create()
 	rs.instance_set_scenario(instance, scenario)
@@ -71,7 +75,7 @@ func _create_chunk_render(pos: Vector3i) -> void:
 			vpos[ayaxis] = ay
 			vpos[vecaxis] = axisadd
 			var line: int = adjdata[axis[0]][ax + ay * axis[1].x]
-			while line > 0:
+			while line:
 				if line & 1:
 					vxix = fun.call(vpos.x, vpos.y, vpos.z, vx, ix, ns, vxix)
 				line = line >> 1
@@ -79,7 +83,7 @@ func _create_chunk_render(pos: Vector3i) -> void:
 	if vx.size() == 0:
 		return
 	rs.mesh_add_surface_from_arrays(mesh, rs.PRIMITIVE_TRIANGLES, ia)
-	print("ChunkRenderer::_create_chunk_render : chunk meshing took ", Time.get_ticks_msec() - start, " ms")
+	print("ChunkRenderer::_create_chunk_render : chunk meshing took ", Time.get_ticks_usec() - start, " us")
 
 
 static func _append_face_z_pos(

@@ -15,6 +15,10 @@ func _ready() -> void:
 		chunks.create_chunk(Vector3i(x, y, z))
 
 
+func _exit_tree() -> void:
+	chunk_renderer.cleanup()
+
+
 var _tick_delay := 0.0
 func _process(delta: float) -> void:
 	_tick_delay += delta
