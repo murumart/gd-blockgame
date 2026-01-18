@@ -10,7 +10,7 @@ var chunk_renderer: ChunkRenderer
 func _ready() -> void:
 	chunks = Chunks.new()
 	chunk_renderer = ChunkRenderer.new(self)
-	var b := 3
+	var b := 7
 	for x in range(-b, b): for y in range(-b, b): for z in range(-b, b):
 		chunks.create_chunk(Vector3i(x, y, z))
 

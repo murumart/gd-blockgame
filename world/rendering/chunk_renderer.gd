@@ -23,12 +23,12 @@ func cleanup() -> void:
 
 
 static var axes := [
-	[Chunks.ADJ_AXIS_XY, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.y), _append_face_z_pos, Vector3i(0, 1, 2), 1],
-	[Chunks.ADJ_AXIS_XZ, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.z), _append_face_y_pos, Vector3i(0, 2, 1), 1],
-	[Chunks.ADJ_AXIS_YZ, Vector2i(Chunks.CHUNK_SIZE.y, Chunks.CHUNK_SIZE.z), _append_face_x_pos, Vector3i(1, 2, 0), 1],
-	[Chunks.ADJ_AXIS_XY + 3, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.y), _append_face_z_neg, Vector3i(0, 1, 2), 0],
-	[Chunks.ADJ_AXIS_XZ + 3, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.z), _append_face_y_neg, Vector3i(0, 2, 1), 0],
-	[Chunks.ADJ_AXIS_YZ + 3, Vector2i(Chunks.CHUNK_SIZE.y, Chunks.CHUNK_SIZE.z), _append_face_x_neg, Vector3i(1, 2, 0), 0],
+	[Chunks.ADJ_AXIS_XY, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.y), Vector3i(0, 1, 2), 1],
+	[Chunks.ADJ_AXIS_XZ, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.z), Vector3i(0, 2, 1), 1],
+	[Chunks.ADJ_AXIS_YZ, Vector2i(Chunks.CHUNK_SIZE.y, Chunks.CHUNK_SIZE.z), Vector3i(1, 2, 0), 1],
+	[Chunks.ADJ_AXIS_XY + 3, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.y), Vector3i(0, 1, 2), 0],
+	[Chunks.ADJ_AXIS_XZ + 3, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.z), Vector3i(0, 2, 1), 0],
+	[Chunks.ADJ_AXIS_YZ + 3, Vector2i(Chunks.CHUNK_SIZE.y, Chunks.CHUNK_SIZE.z), Vector3i(1, 2, 0), 0],
 ]
 func _create_chunk_render(pos: Vector3i) -> void:
 	assert(is_instance_valid(world))
@@ -50,6 +50,13 @@ func _create_chunk_render(pos: Vector3i) -> void:
 	instances[pos] = instance
 	meshes[pos] = mesh
 
+	_mesh_chunk(mesh, world.chunks.adjacency_maps[pos])
+	print("ChunkRenderer::_create_chunk_render : chunk meshing took ", Time.get_ticks_usec() - start, " us")
+
+
+func _mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
+	rs.mesh_clear(mesh)
+
 	var ia: Array
 	ia.resize(am.ARRAY_MAX)
 
@@ -61,146 +68,85 @@ func _create_chunk_render(pos: Vector3i) -> void:
 	ia[am.ARRAY_NORMAL] = ns
 
 	var vxix := 0
-	var adjdata := world.chunks.adjacency_maps[pos]
 
-	var vpos := Vector3i()
+	var vpos := Vector3()
 	for axis: Array in axes:
-		var fun: Callable = axis[2]
-		var axaxis: int = axis[3].x
-		var ayaxis: int = axis[3].y
-		var vecaxis: int = axis[3].z
-		var axisadd: int = axis[4]
+		var axisi: int = axis[0]
+		var axaxis: int = axis[2].x
+		var ayaxis: int = axis[2].y
+		var vecaxis: int = axis[2].z
+		var axisadd: int = axis[3]
+
+		var vtx1 := _FACE_VTICES[axisi][0]
+		var vtx2 := _FACE_VTICES[axisi][1]
+		var vtx3 := _FACE_VTICES[axisi][2]
+		var vtx4 := _FACE_VTICES[axisi][3]
+		var normal := _FACE_NORMALS[axisi]
+
 		for ax: int in axis[1].x: for ay: int in axis[1].y:
 			vpos[axaxis] = ax
 			vpos[ayaxis] = ay
 			vpos[vecaxis] = axisadd
-			var line: int = adjdata[axis[0]][ax + ay * axis[1].x]
+			var line: int = adjdata[axisi][ax + ay * axis[1].x]
 			while line:
 				if line & 1:
-					vxix = fun.call(vpos.x, vpos.y, vpos.z, vx, ix, ns, vxix)
+					#vxix = fun.call(vpos.x, vpos.y, vpos.z, vx, ix, ns, vxix)
+					vxix = _append_face(
+						vpos,
+						vtx1, vtx2, vtx3, vtx4,
+						normal,
+						vx, ix, ns, vxix,
+					)
 				line = line >> 1
 				vpos[vecaxis] += 1
-	if vx.size() == 0:
-		return
+	if vx.size() == 0: return
 	rs.mesh_add_surface_from_arrays(mesh, rs.PRIMITIVE_TRIANGLES, ia)
-	print("ChunkRenderer::_create_chunk_render : chunk meshing took ", Time.get_ticks_usec() - start, " us")
 
 
-static func _append_face_z_pos(
-	x: int, y: int, z: int,
+static var _FACE_VTICES: Array[PackedVector3Array] = [
+	[Vector3(0, 0, 0), Vector3(0, 1, 0), Vector3(1, 1, 0), Vector3(1, 0, 0)], # +z
+	[Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 1), Vector3(0, 0, 1)], # +y
+	[Vector3(0, 0, 0), Vector3(0, 0, 1), Vector3(0, 1, 1), Vector3(0, 1, 0)], # +x
+	[Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 1, 0), Vector3(0, 1, 0)], # -z
+	[Vector3(0, 0, 0), Vector3(0, 0, 1), Vector3(1, 0, 1), Vector3(1, 0, 0)], # -y
+	[Vector3(0, 0, 0), Vector3(0, 1, 0), Vector3(0, 1, 1), Vector3(0, 0, 1)], # -x
+
+]
+static var _FACE_NORMALS: PackedVector3Array = [
+	Vector3i.BACK,
+	Vector3i.UP,
+	Vector3i.RIGHT,
+	Vector3i.FORWARD,
+	Vector3i.DOWN,
+	Vector3i.LEFT,
+]
+
+
+static func _append_face(
+	pos: Vector3,
+
+	vtx1: Vector3,
+	vtx2: Vector3,
+	vtx3: Vector3,
+	vtx4: Vector3,
+	normal: Vector3,
+
 	vx: PackedVector3Array,
 	ix: PackedInt32Array,
 	ns: PackedVector3Array,
-	vxix: int
+	vxix: int,
 ) -> int:
-	vx.append(Vector3(x, y, z))
-	vx.append(Vector3(x, y + 1, z))
-	vx.append(Vector3(x + 1, y + 1, z))
-	vx.append(Vector3(x + 1, y, z))
+	vx.append(pos + vtx1) # _FACE_VTICES[axis][0]
+	vx.append(pos + vtx2) # _FACE_VTICES[axis][1]
+	vx.append(pos + vtx3) # _FACE_VTICES[axis][2]
+	vx.append(pos + vtx4) # _FACE_VTICES[axis][3]
 
 	ix.append(vxix + 0); ix.append(vxix + 1); ix.append(vxix + 2)
 	ix.append(vxix + 2); ix.append(vxix + 3); ix.append(vxix + 0)
-	ns.append(Vector3(0, 0, 1)); ns.append(Vector3(0, 0, 1))
-	ns.append(Vector3(0, 0, 1)); ns.append(Vector3(0, 0, 1))
 
-	return vxix + 4
-
-
-static func _append_face_z_neg(
-	x: int, y: int, z: int,
-	vx: PackedVector3Array,
-	ix: PackedInt32Array,
-	ns: PackedVector3Array,
-	vxix: int
-) -> int:
-	vx.append(Vector3(x, y, z))
-	vx.append(Vector3(x + 1, y, z))
-	vx.append(Vector3(x + 1, y + 1, z))
-	vx.append(Vector3(x, y + 1, z))
-
-	ix.append(vxix + 0); ix.append(vxix + 1); ix.append(vxix + 2)
-	ix.append(vxix + 2); ix.append(vxix + 3); ix.append(vxix + 0)
-	ns.append(Vector3(0, 0, -1)); ns.append(Vector3(0, 0, -1))
-	ns.append(Vector3(0, 0, -1)); ns.append(Vector3(0, 0, -1))
-
-	return vxix + 4
-
-
-static func _append_face_x_pos(
-	x: int, y: int, z: int,
-	vx: PackedVector3Array,
-	ix: PackedInt32Array,
-	ns: PackedVector3Array,
-	vxix: int
-) -> int:
-	vx.append(Vector3(x, y, z))
-	vx.append(Vector3(x, y, z + 1))
-	vx.append(Vector3(x, y + 1, z + 1))
-	vx.append(Vector3(x, y + 1, z))
-
-	ix.append(vxix + 0); ix.append(vxix + 1); ix.append(vxix + 2)
-	ix.append(vxix + 2); ix.append(vxix + 3); ix.append(vxix + 0)
-	ns.append(Vector3(1, 0, 0)); ns.append(Vector3(1, 0, 0))
-	ns.append(Vector3(1, 0, 0)); ns.append(Vector3(1, 0, 0))
-
-	return vxix + 4
-
-
-static func _append_face_x_neg(
-	x: int, y: int, z: int,
-	vx: PackedVector3Array,
-	ix: PackedInt32Array,
-	ns: PackedVector3Array,
-	vxix: int
-) -> int:
-	vx.append(Vector3(x, y, z))
-	vx.append(Vector3(x, y + 1, z))
-	vx.append(Vector3(x, y + 1, z + 1))
-	vx.append(Vector3(x, y, z + 1))
-
-	ix.append(vxix + 0); ix.append(vxix + 1); ix.append(vxix + 2)
-	ix.append(vxix + 2); ix.append(vxix + 3); ix.append(vxix + 0)
-	ns.append(Vector3(-1, 0, 0)); ns.append(Vector3(-1, 0, 0))
-	ns.append(Vector3(-1, 0, 0)); ns.append(Vector3(-1, 0, 0))
-
-	return vxix + 4
-
-
-static func _append_face_y_pos(
-	x: int, y: int, z: int,
-	vx: PackedVector3Array,
-	ix: PackedInt32Array,
-	ns: PackedVector3Array,
-	vxix: int
-) -> int:
-	vx.append(Vector3(x, y, z))
-	vx.append(Vector3(x + 1, y, z))
-	vx.append(Vector3(x + 1, y, z + 1))
-	vx.append(Vector3(x, y, z + 1))
-
-	ix.append(vxix + 0); ix.append(vxix + 1); ix.append(vxix + 2)
-	ix.append(vxix + 2); ix.append(vxix + 3); ix.append(vxix + 0)
-	ns.append(Vector3(0, 1, 0)); ns.append(Vector3(0, 1, 0))
-	ns.append(Vector3(0, 1, 0)); ns.append(Vector3(0, 1, 0))
-
-	return vxix + 4
-
-
-static func _append_face_y_neg(
-	x: int, y: int, z: int,
-	vx: PackedVector3Array,
-	ix: PackedInt32Array,
-	ns: PackedVector3Array,
-	vxix: int
-) -> int:
-	vx.append(Vector3(x, y, z))
-	vx.append(Vector3(x, y, z + 1))
-	vx.append(Vector3(x + 1, y, z + 1))
-	vx.append(Vector3(x + 1, y, z))
-
-	ix.append(vxix + 0); ix.append(vxix + 1); ix.append(vxix + 2)
-	ix.append(vxix + 2); ix.append(vxix + 3); ix.append(vxix + 0)
-	ns.append(Vector3(0, -1, 0)); ns.append(Vector3(0, -1, 0))
-	ns.append(Vector3(0, -1, 0)); ns.append(Vector3(0, -1, 0))
+	ns.append(normal)
+	ns.append(normal)
+	ns.append(normal)
+	ns.append(normal)
 
 	return vxix + 4
