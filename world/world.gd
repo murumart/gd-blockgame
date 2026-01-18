@@ -52,8 +52,9 @@ func _start_generation() -> void:
 ## Loads a [Chunk] at [param chunk_pos] and returns it. If a chunk already exists at [param chunk_pos],
 ## then returns the pre-existing one.
 func load_chunk(chunk_pos: Vector3) -> Chunk:
-	if is_instance_valid(chunks.get(chunk_pos)):
-		return chunks.get(chunk_pos)
+	var gotten: Variant = chunks.get(chunk_pos)
+	if is_instance_valid(gotten):
+		return gotten
 	var chunk := ChunkScene.instantiate()
 	chunk.world = self
 	chunks[chunk_pos] = chunk
@@ -84,15 +85,11 @@ func _update_loaded_chunks() -> void:
 		if chunk.load_step >= Chunk.LoadSteps.MESH_GENNING:
 			continue
 
-		var has_all_edges := true
-		for npos in NEIGHBOUR_ADDS:
-			var chunk_at: Chunk = chunks.get(pos + npos, null)
-			if not is_instance_valid(chunk_at) or chunk_at.load_step < Chunk.LoadSteps.BLOCKS_GENNED:
-				has_all_edges = false
-				break
-		if not has_all_edges:
-			chunk.make_mesh(null)
-			continue
+		#for npos in NEIGHBOUR_ADDS:
+			#var cnpos := pos + npos
+			#var chunk_at: Chunk = chunks.get(cnpos, null)
+			#if not is_instance_valid(chunk_at) or chunk_at.load_step < Chunk.LoadSteps.BLOCKS_GENNED:
+				#load_chunk(cnpos)
 		#await get_tree().process_frame
 		chunk.make_mesh(self)
 
