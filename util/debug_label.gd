@@ -10,4 +10,5 @@ func _physics_process(_delta: float) -> void:
 	txt += "\nChunk Generating: " + str(world.chunks._THREADACCESS_chunk_to_load)
 	txt += " (" + str(world.chunks._chunks_to_load_queue.size()) + " queued)"
 	txt += " (" + str(world.chunks._last_center) + " around)"
+	txt += " (" + str(world.chunks._THREADACCESS_chunk_to_load.distance_squared_to(world.get_center_chunk())) + " distance)"
 	text = txt
