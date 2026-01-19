@@ -1,10 +1,27 @@
-[gd_scene load_steps=6 format=3 uid="uid://cmkexumlctotr"]
+[gd_scene load_steps=11 format=3 uid="uid://cmkexumlctotr"]
 
 [ext_resource type="Script" uid="uid://cufc5snki2oh2" path="res://world/world.gd" id="1_6xmxd"]
 [ext_resource type="Script" uid="uid://bqu8wqj3go0fy" path="res://addons/simple_free_look_camera/camera.gd" id="2_tcf2h"]
 [ext_resource type="Texture2D" uid="uid://b87bewhjjtpaj" path="res://carcinous_scope_incomprehensible.png" id="3_4717r"]
+[ext_resource type="Script" uid="uid://dyj8vy6t2pttm" path="res://util/debug_label.gd" id="3_sc4t8"]
 [ext_resource type="Script" uid="uid://7idfxdiph6y0" path="res://util/fps_timer.gd" id="4_h5o24"]
+[ext_resource type="Script" uid="uid://63c0a7qtcikq" path="res://util/chunk_border_debug.gd" id="5_fn3g3"]
 [ext_resource type="Script" uid="uid://uqi1qc0cl1sc" path="res://util/debug_binds.gd" id="5_mmdvd"]
+[ext_resource type="Texture2D" uid="uid://bfv0covf31ga8" path="res://assets/textures/outline.png" id="7_ai45w"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4papg"]
+transparency = 1
+shading_mode = 0
+albedo_texture = ExtResource("7_ai45w")
+uv1_offset = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+uv1_triplanar_sharpness = 1.1095711
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_sc4t8"]
+material = SubResource("StandardMaterial3D_4papg")
+flip_faces = true
+size = Vector3(1.01, 1.01, 1.01)
 
 [node name="World" type="Node3D" node_paths=PackedStringArray("chunk_load_center")]
 script = ExtResource("1_6xmxd")
@@ -26,6 +43,21 @@ light_energy = 2.225
 omni_range = 40.23
 omni_attenuation = 0.417
 
+[node name="Control" type="Control" parent="Camera3D"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DebugLabel" type="RichTextLabel" parent="Camera3D/Control" node_paths=PackedStringArray("world")]
+layout_mode = 0
+offset_right = 1149.0
+offset_bottom = 260.0
+script = ExtResource("3_sc4t8")
+world = NodePath("../../..")
+
 [node name="Sprite3D" type="Sprite3D" parent="."]
 transform = Transform3D(0.9685267, 0, 0.24890965, 0, 1, 0, -0.24890965, 0, 0.9685267, -6.387204, 0.86441326, 1.9429252)
 texture = ExtResource("3_4717r")
@@ -39,6 +71,16 @@ omni_attenuation = 0.417
 [node name="FpsTimer" type="Timer" parent="."]
 script = ExtResource("4_h5o24")
 metadata/_custom_type_script = "uid://7idfxdiph6y0"
+
+[node name="DebugChunkBorder" type="Node3D" parent="." node_paths=PackedStringArray("world")]
+script = ExtResource("5_fn3g3")
+world = NodePath("..")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DebugChunkBorder"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.495, 0.495, 0.495)
+transparency = 0.87
+cast_shadow = 0
+mesh = SubResource("BoxMesh_sc4t8")
 
 [node name="Debug_Binds" type="Node" parent="."]
 script = ExtResource("5_mmdvd")
