@@ -14,10 +14,10 @@ enum {
 	FLAG_NEEDS_MESHING = 0b1000,
 }
 
-var blocks: Dictionary[Vector3i, PackedByteArray]
-var flags: Dictionary[Vector3i, int]
-var occupancy_maps: Dictionary[Vector3i, Array]
-var adjacency_maps: Dictionary[Vector3i, Array]
+var blocks: Dictionary[Vector3i, PackedByteArray] = {}
+var flags: Dictionary[Vector3i, int] = {}
+var occupancy_maps: Dictionary[Vector3i, Array] = {}
+var adjacency_maps: Dictionary[Vector3i, Array] = {}
 var chunk_load_radius := 6
 
 
@@ -46,8 +46,9 @@ func load_chunks(cpos: Vector3i, load_radius: int = chunk_load_radius) -> void:
 
 
 func unload_chunks(center: Vector3i, load_radius: int = chunk_load_radius) -> void:
-	for cpos in blocks:
-		if center.distance_squared_to(cpos) > load_radius * load_radius:
+	for cpos: Vector3i in blocks.keys():
+		var dist := center.distance_squared_to(cpos)
+		if dist > load_radius * load_radius:
 			destroy_chunk(cpos)
 
 
