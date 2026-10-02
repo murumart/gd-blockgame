@@ -3,7 +3,7 @@ class_name Chunks
 signal chunk_created(pos: Vector3i)
 signal chunk_destroyed(pos: Vector3i)
 
-const C_CHUNK_SIZE := Vector3i(16, 16, 16)
+const C_CHUNK_SIZE := Vector3i(32, 32, 32)
 const C_BLOCKS_PER_CHUNK := C_CHUNK_SIZE.x * C_CHUNK_SIZE.y * C_CHUNK_SIZE.z
 
 static var CHUNK_SIZE := C_CHUNK_SIZE
@@ -22,7 +22,7 @@ var occupancy_maps: Dictionary[Vector3i, Array]
 var adjacency_maps: Dictionary[Vector3i, Array]
 var chunk_load_radius := 6
 
-const MAX_QUEUED_FOR_LOADING := 1500
+const MAX_QUEUED_FOR_LOADING := 100
 var _chunks_to_load_queue: Array[Vector3i]
 var _chunk_loader_thread := Thread.new()
 var _chunk_loader_semaph := Semaphore.new()
@@ -87,12 +87,13 @@ func unload_chunks(center: Vector3i, load_radius: int = chunk_load_radius) -> vo
 			destroy_chunk(cpos)
 
 
-func _queue_chunk_load(cpos: Vector3i, _center: Vector3i) -> void:
+func _queue_chunk_load(cpos: Vector3i, center: Vector3i) -> void:
 	if _chunks_to_load_queue.size() > MAX_QUEUED_FOR_LOADING:
 		return
 	if cpos in blocks or cpos in _chunks_to_load_queue:
 		return
-	_chunks_to_load_queue.append(cpos)
+	var ix := _chunks_to_load_queue.bsearch_custom(cpos, _sort_chunks_by_center_dist.bind(center))
+	_chunks_to_load_queue.insert(ix, cpos)
 
 
 func _chunk_created(

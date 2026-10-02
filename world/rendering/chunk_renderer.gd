@@ -35,7 +35,10 @@ func cleanup() -> void:
 var _last_display_target_pos: Vector3i = Vector3i.ONE * -9999999 # weird default so we sort straight away probably
 func display_target_update(pos: Vector3i) -> void:
 	if _last_display_target_pos != pos:
-		chunks_to_mesh.sort_custom(func(a: Vector3i, b: Vector3i) -> bool: return a.distance_squared_to(pos) > b.distance_squared_to(pos))
+		chunks_to_mesh.sort_custom(
+			func(a: Vector3i, b: Vector3i) -> bool:
+				return a.distance_squared_to(pos) > b.distance_squared_to(pos)
+	)
 	_last_display_target_pos = pos
 
 

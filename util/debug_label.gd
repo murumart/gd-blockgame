@@ -5,6 +5,7 @@ extends RichTextLabel
 
 func _physics_process(_delta: float) -> void:
 	var txt := "Debug"
+	txt += "\nFps: " + str(Engine.get_frames_per_second())
 	txt += "\nTarget Pos: " + str(world.chunk_load_center.position)
 	txt += "\nTarget Chunk Pos: " + str(world.get_center_chunk())
 	txt += "\nChunk Generating: " + str(world.chunks._THREADACCESS_chunk_to_load)
