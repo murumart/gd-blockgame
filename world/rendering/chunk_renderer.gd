@@ -17,6 +17,7 @@ var scenario: RID
 
 var instances: Dictionary[Vector3i, RID]
 var meshes: Dictionary[Vector3i, RID]
+var material := preload("res://world/rendering/chunk_material.tres").get_rid()
 
 var chunks_to_mesh: Array[Vector3i]
 
@@ -73,6 +74,7 @@ func _create_chunk_render(pos: Vector3i) -> void:
 
 	var instance := rs.instance_create()
 	rs.instance_set_scenario(instance, scenario)
+	rs.instance_set_custom_aabb(instance, AABB(Vector3.ZERO, Vector3.ONE * 32))
 
 	var mesh := rs.mesh_create()
 	rs.instance_set_base(instance, mesh)
@@ -103,10 +105,8 @@ func mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
 
 	var vx: PackedVector3Array
 	var ix: PackedInt32Array
-	var ns: PackedVector3Array
 	ia[am.ARRAY_VERTEX] = vx
 	ia[am.ARRAY_INDEX] = ix
-	ia[am.ARRAY_NORMAL] = ns
 
 	var vxix := 0
 
@@ -118,11 +118,11 @@ func mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
 		var vecaxis: int = axis[2].z
 		var axisadd: int = axis[3]
 
-		var vtx1 := _FACE_VTICES[axisi][0]
-		var vtx2 := _FACE_VTICES[axisi][1]
-		var vtx3 := _FACE_VTICES[axisi][2]
-		var vtx4 := _FACE_VTICES[axisi][3]
-		var normal := _FACE_NORMALS[axisi]
+		var vtx1: Vector3i = _FACE_VTICES[axisi][0]
+		var vtx2: Vector3i = _FACE_VTICES[axisi][1]
+		var vtx3: Vector3i = _FACE_VTICES[axisi][2]
+		var vtx4: Vector3i = _FACE_VTICES[axisi][3]
+		var normal: _FaceNormalIx = _FACE_NORMALS[axisi]
 
 		for ax: int in axis[1].x: for ay: int in axis[1].y:
 			vpos[axaxis] = ax
@@ -135,59 +135,104 @@ func mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
 						vpos,
 						vtx1, vtx2, vtx3, vtx4,
 						normal,
-						vx, ix, ns, vxix,
+						vx, ix, vxix,
 					)
 				line = line >> 1
 				vpos[vecaxis] += 1
 	if vx.size() == 0: return
 	rs.mesh_add_surface_from_arrays(mesh, rs.PRIMITIVE_TRIANGLES, ia)
+	rs.mesh_surface_set_material(mesh, 0, material)
 
 
-static var _FACE_VTICES: Array[PackedVector3Array] = [
-	[Vector3(0, 0, 0), Vector3(0, 1, 0), Vector3(1, 1, 0), Vector3(1, 0, 0)], # +z
-	[Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 1), Vector3(0, 0, 1)], # +y
-	[Vector3(0, 0, 0), Vector3(0, 0, 1), Vector3(0, 1, 1), Vector3(0, 1, 0)], # +x
-	[Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 1, 0), Vector3(0, 1, 0)], # -z
-	[Vector3(0, 0, 0), Vector3(0, 0, 1), Vector3(1, 0, 1), Vector3(1, 0, 0)], # -y
-	[Vector3(0, 0, 0), Vector3(0, 1, 0), Vector3(0, 1, 1), Vector3(0, 0, 1)], # -x
-
+static var _FACE_VTICES: Array[Array] = [
+	[Vector3i(0, 0, 0), Vector3i(0, 1, 0), Vector3i(1, 1, 0), Vector3i(1, 0, 0)], # +z
+	[Vector3i(0, 0, 0), Vector3i(1, 0, 0), Vector3i(1, 0, 1), Vector3i(0, 0, 1)], # +y
+	[Vector3i(0, 0, 0), Vector3i(0, 0, 1), Vector3i(0, 1, 1), Vector3i(0, 1, 0)], # +x
+	[Vector3i(0, 0, 0), Vector3i(1, 0, 0), Vector3i(1, 1, 0), Vector3i(0, 1, 0)], # -z
+	[Vector3i(0, 0, 0), Vector3i(0, 0, 1), Vector3i(1, 0, 1), Vector3i(1, 0, 0)], # -y
+	[Vector3i(0, 0, 0), Vector3i(0, 1, 0), Vector3i(0, 1, 1), Vector3i(0, 0, 1)], # -x
 ]
-static var _FACE_NORMALS: PackedVector3Array = [
-	Vector3i.BACK,
-	Vector3i.UP,
-	Vector3i.RIGHT,
-	Vector3i.FORWARD,
-	Vector3i.DOWN,
-	Vector3i.LEFT,
+
+enum _FaceNormalIx {
+	BACK,
+	UP,
+	RIGHT,
+	FORWARD,
+	DOWN,
+	LEFT,
+}
+
+static var _FACE_NORMALS := [
+	_FaceNormalIx.BACK,
+	_FaceNormalIx.UP,
+	_FaceNormalIx.RIGHT,
+	_FaceNormalIx.FORWARD,
+	_FaceNormalIx.DOWN,
+	_FaceNormalIx.LEFT,
 ]
 
 
 static func _append_face(
-	pos: Vector3,
+	pos: Vector3i,
 
-	vtx1: Vector3,
-	vtx2: Vector3,
-	vtx3: Vector3,
-	vtx4: Vector3,
-	normal: Vector3,
+	vtx1: Vector3i,
+	vtx2: Vector3i,
+	vtx3: Vector3i,
+	vtx4: Vector3i,
+	normal: _FaceNormalIx,
 
 	vx: PackedVector3Array,
 	ix: PackedInt32Array,
-	ns: PackedVector3Array,
 	vxix: int,
 ) -> int:
-	vx.append(pos + vtx1) # _FACE_VTICES[axis][0]
-	vx.append(pos + vtx2) # _FACE_VTICES[axis][1]
-	vx.append(pos + vtx3) # _FACE_VTICES[axis][2]
-	vx.append(pos + vtx4) # _FACE_VTICES[axis][3]
+	var pba := PackedByteArray()
+	pba.resize(12)
+
+	var pos1 := Vector3i()
+	var vertex := Vector3()
+
+	pos1 = pos + vtx1
+	pba.encode_u8(0, pos1.x)
+	pba.encode_u8(1, pos1.y)
+	pba.encode_u8(2, pos1.z)
+	pba.encode_u8(3, int(normal))
+	vertex.x = pba.decode_float(0)
+	#vertex.y = unset
+	#vertex.z = unset
+	vx.append(vertex)
+
+	pos1 = pos + vtx2
+	pba.encode_u8(0, pos1.x)
+	pba.encode_u8(1, pos1.y)
+	pba.encode_u8(2, pos1.z)
+	pba.encode_u8(3, int(normal))
+	vertex.x = pba.decode_float(0)
+	#vertex.y = unset
+	#vertex.z = unset
+	vx.append(vertex)
+
+	pos1 = pos + vtx3
+	pba.encode_u8(0, pos1.x)
+	pba.encode_u8(1, pos1.y)
+	pba.encode_u8(2, pos1.z)
+	pba.encode_u8(3, int(normal))
+	vertex.x = pba.decode_float(0)
+	#vertex.y = unset
+	#vertex.z = unset
+	vx.append(vertex)
+
+	pos1 = pos + vtx4
+	pba.encode_u8(0, pos1.x)
+	pba.encode_u8(1, pos1.y)
+	pba.encode_u8(2, pos1.z)
+	pba.encode_u8(3, int(normal))
+	vertex.x = pba.decode_float(0)
+	#vertex.y = unset
+	#vertex.z = unset
+	vx.append(vertex)
 
 	ix.append(vxix + 0); ix.append(vxix + 1); ix.append(vxix + 2)
 	ix.append(vxix + 2); ix.append(vxix + 3); ix.append(vxix + 0)
-
-	ns.append(normal)
-	ns.append(normal)
-	ns.append(normal)
-	ns.append(normal)
 
 	return vxix + 4
 
