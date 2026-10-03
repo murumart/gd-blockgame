@@ -3,7 +3,7 @@ class_name Chunks
 signal chunk_created(pos: Vector3i)
 signal chunk_destroyed(pos: Vector3i)
 
-const C_CHUNK_SIZE := Vector3i(32, 32, 32)
+const C_CHUNK_SIZE := Vector3i(16, 16, 16)
 const C_BLOCKS_PER_CHUNK := C_CHUNK_SIZE.x * C_CHUNK_SIZE.y * C_CHUNK_SIZE.z
 
 static var CHUNK_SIZE := C_CHUNK_SIZE
@@ -20,7 +20,7 @@ var blocks: Dictionary[Vector3i, PackedByteArray] = {}
 var flags: Dictionary[Vector3i, int]
 var occupancy_maps: Dictionary[Vector3i, Array]
 var adjacency_maps: Dictionary[Vector3i, Array]
-var chunk_load_radius := 6
+var chunk_load_radius := 0
 
 const MAX_QUEUED_FOR_LOADING := 100
 var _chunks_to_load_queue: Array[Vector3i]
@@ -54,8 +54,7 @@ func process(center: Vector3i, load_radius: int = chunk_load_radius) -> void:
 	_THREADACCESS_chunk_to_load = _chunks_to_load_queue[-1]
 	var dist := _THREADACCESS_chunk_to_load.distance_squared_to(center)
 	while _chunks_to_load_queue.size() > 0 and dist > load_radius * load_radius:
-		_chunks_to_load_queue.remove_at(-1)
-		_THREADACCESS_chunk_to_load = _chunks_to_load_queue[-1]
+		_THREADACCESS_chunk_to_load = _chunks_to_load_queue.pop_back()
 		dist = _THREADACCESS_chunk_to_load.distance_squared_to(center)
 	assert(_THREADACCESS_chunk_to_load not in blocks)
 	_chunk_loader_mutex.unlock()

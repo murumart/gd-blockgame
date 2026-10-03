@@ -24,7 +24,7 @@ size = Vector3(1.01, 1.01, 1.01)
 
 [node name="World" type="Node3D" unique_id=1071118404 node_paths=PackedStringArray("chunk_load_center")]
 script = ExtResource("1_6xmxd")
-chunk_load_center = NodePath("Camera3D")
+chunk_load_center = NodePath(".")
 metadata/_custom_type_script = "uid://cufc5snki2oh2"
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=763117373]
@@ -50,22 +50,17 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="DebugLabel" type="RichTextLabel" parent="Camera3D/Control" unique_id=1295005083 node_paths=PackedStringArray("world")]
+[node name="DebugLabel" type="RichTextLabel" parent="Camera3D/Control" unique_id=1295005083 node_paths=PackedStringArray("world", "cam")]
 layout_mode = 0
 offset_right = 1149.0
 offset_bottom = 260.0
 script = ExtResource("3_sc4t8")
 world = NodePath("../../..")
+cam = NodePath("../..")
 
 [node name="Sprite3D" type="Sprite3D" parent="." unique_id=712533996]
 transform = Transform3D(0.9685267, 0, 0.24890965, 0, 1, 0, -0.24890965, 0, 0.9685267, -6.387204, 0.86441326, 1.9429252)
 texture = ExtResource("3_4717r")
-
-[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=2089025034]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.286795, 40.85865, 94.589584)
-light_energy = 5.359
-omni_range = 127.589
-omni_attenuation = 0.417
 
 [node name="DebugChunkBorder" type="Node3D" parent="." unique_id=1804981221 node_paths=PackedStringArray("world")]
 script = ExtResource("5_fn3g3")

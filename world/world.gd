@@ -31,6 +31,12 @@ func _process(delta: float) -> void:
 
 	chunk_renderer.check_meshing()
 
+	if Input.is_action_just_pressed(&"ui_redo"):
+		var am := ArrayMesh.new()
+		var arrs := RenderingServer.mesh_surface_get_arrays(chunk_renderer.meshes[Vector3i.ZERO], 0)
+		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrs)
+		ResourceSaver.save(am, "res://fuck.tres", ResourceSaver.FLAG_BUNDLE_RESOURCES)
+
 
 var last_center_cpos := Vector3i.MIN
 func tick() -> void:

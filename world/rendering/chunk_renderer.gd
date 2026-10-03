@@ -7,9 +7,9 @@ static var axes := [
 	[Chunks.ADJ_AXIS_XY, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.y), Vector3i(0, 1, 2), 1],
 	[Chunks.ADJ_AXIS_XZ, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.z), Vector3i(0, 2, 1), 1],
 	[Chunks.ADJ_AXIS_YZ, Vector2i(Chunks.CHUNK_SIZE.y, Chunks.CHUNK_SIZE.z), Vector3i(1, 2, 0), 1],
-	[Chunks.ADJ_AXIS_XY + 3, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.y), Vector3i(0, 1, 2), 0],
-	[Chunks.ADJ_AXIS_XZ + 3, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.z), Vector3i(0, 2, 1), 0],
-	[Chunks.ADJ_AXIS_YZ + 3, Vector2i(Chunks.CHUNK_SIZE.y, Chunks.CHUNK_SIZE.z), Vector3i(1, 2, 0), 0],
+	#[Chunks.ADJ_AXIS_XY + 3, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.y), Vector3i(0, 1, 2), 0],
+	#[Chunks.ADJ_AXIS_XZ + 3, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.z), Vector3i(0, 2, 1), 0],
+	#[Chunks.ADJ_AXIS_YZ + 3, Vector2i(Chunks.CHUNK_SIZE.y, Chunks.CHUNK_SIZE.z), Vector3i(1, 2, 0), 0],
 ]
 
 var world: World
@@ -171,7 +171,7 @@ static var _FACE_NORMALS := [
 	_FaceNormalIx.LEFT,
 ]
 
-
+static var fle := FileAccess.open("res://shit.txt", FileAccess.WRITE_READ)
 static func _append_face(
 	pos: Vector3i,
 
@@ -189,7 +189,8 @@ static func _append_face(
 	pba.resize(12)
 
 	var pos1 := Vector3i()
-	var vertex := Vector3()
+	var vertex := Vector3(NAN, NAN, NAN)
+	fle.store_line("appending face at pos %s" % pos)
 
 	pos1 = pos + vtx1
 	pba.encode_u8(0, pos1.x)
@@ -200,6 +201,9 @@ static func _append_face(
 	#vertex.y = unset
 	#vertex.z = unset
 	vx.append(vertex)
+	pba.encode_float(0, vertex.x)
+	fle.store_line("  x:%s, y:%s, z:%s, encode:v3(%s),u32(%s),b(%s),bytes(%s,%s,%s,%s)" % [pos1.x, pos1.y, pos1.z, vertex, pba.decode_u32(0), String.num_uint64(pba.decode_u32(0), 2).lpad(32, "0"), pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3)])
+	fle.store_line("  from:bytes(%s,%s,%s,%s)" % [pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3)])
 
 	pos1 = pos + vtx2
 	pba.encode_u8(0, pos1.x)
@@ -210,6 +214,7 @@ static func _append_face(
 	#vertex.y = unset
 	#vertex.z = unset
 	vx.append(vertex)
+	fle.store_line("  x:%s, y:%s, z:%s, encode:v3(%s),u32(%s),b(%s),bytes(%s,%s,%s,%s)" % [pos1.x, pos1.y, pos1.z, vertex, pba.decode_u32(0), String.num_uint64(pba.decode_u32(0), 2).lpad(32, "0"), pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3)])
 
 	pos1 = pos + vtx3
 	pba.encode_u8(0, pos1.x)
@@ -220,6 +225,7 @@ static func _append_face(
 	#vertex.y = unset
 	#vertex.z = unset
 	vx.append(vertex)
+	fle.store_line("  x:%s, y:%s, z:%s, encode:v3(%s),u32(%s),b(%s),bytes(%s,%s,%s,%s)" % [pos1.x, pos1.y, pos1.z, vertex, pba.decode_u32(0), String.num_uint64(pba.decode_u32(0), 2).lpad(32, "0"), pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3)])
 
 	pos1 = pos + vtx4
 	pba.encode_u8(0, pos1.x)
@@ -230,9 +236,11 @@ static func _append_face(
 	#vertex.y = unset
 	#vertex.z = unset
 	vx.append(vertex)
+	fle.store_line("  x:%s, y:%s, z:%s, encode:v3(%s),u32(%s),b(%s),bytes(%s,%s,%s,%s)" % [pos1.x, pos1.y, pos1.z, vertex, pba.decode_u32(0), String.num_uint64(pba.decode_u32(0), 2).lpad(32, "0"), pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3)])
 
 	ix.append(vxix + 0); ix.append(vxix + 1); ix.append(vxix + 2)
 	ix.append(vxix + 2); ix.append(vxix + 3); ix.append(vxix + 0)
+	fle.store_8(ord("\n"))
 
 	return vxix + 4
 
