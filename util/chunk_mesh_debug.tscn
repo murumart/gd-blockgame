@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://ot1hpqfily6a"]
 
-[ext_resource type="ArrayMesh" uid="uid://df2yvl4xuvvu0" path="res://fuck.tres" id="1_d1wfi"]
+[ext_resource type="ArrayMesh" uid="uid://dvej8gt723tht" path="res://fuck.tres" id="1_d1wfi"]
 
 [node name="MeshInstance3D" type="MeshInstance3D" unique_id=1720942817]
 mesh = ExtResource("1_d1wfi")

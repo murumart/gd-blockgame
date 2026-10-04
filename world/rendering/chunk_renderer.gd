@@ -7,9 +7,9 @@ static var axes := [
 	[Chunks.ADJ_AXIS_XY, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.y), Vector3i(0, 1, 2), 1],
 	[Chunks.ADJ_AXIS_XZ, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.z), Vector3i(0, 2, 1), 1],
 	[Chunks.ADJ_AXIS_YZ, Vector2i(Chunks.CHUNK_SIZE.y, Chunks.CHUNK_SIZE.z), Vector3i(1, 2, 0), 1],
-	#[Chunks.ADJ_AXIS_XY + 3, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.y), Vector3i(0, 1, 2), 0],
-	#[Chunks.ADJ_AXIS_XZ + 3, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.z), Vector3i(0, 2, 1), 0],
-	#[Chunks.ADJ_AXIS_YZ + 3, Vector2i(Chunks.CHUNK_SIZE.y, Chunks.CHUNK_SIZE.z), Vector3i(1, 2, 0), 0],
+	[Chunks.ADJ_AXIS_XY + 3, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.y), Vector3i(0, 1, 2), 0],
+	[Chunks.ADJ_AXIS_XZ + 3, Vector2i(Chunks.CHUNK_SIZE.x, Chunks.CHUNK_SIZE.z), Vector3i(0, 2, 1), 0],
+	[Chunks.ADJ_AXIS_YZ + 3, Vector2i(Chunks.CHUNK_SIZE.y, Chunks.CHUNK_SIZE.z), Vector3i(1, 2, 0), 0],
 ]
 
 var world: World
@@ -241,7 +241,7 @@ static func _append_face(
 	ix.append(vxix + 0); ix.append(vxix + 1); ix.append(vxix + 2)
 	ix.append(vxix + 2); ix.append(vxix + 3); ix.append(vxix + 0)
 	fle.store_8(ord("\n"))
-
+	
 	return vxix + 4
 
 

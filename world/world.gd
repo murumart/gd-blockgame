@@ -31,10 +31,12 @@ func _process(delta: float) -> void:
 
 	chunk_renderer.check_meshing()
 
-	if Input.is_action_just_pressed(&"ui_redo"):
+	if Input.is_action_just_pressed(&"ui_redo"): # DEBUG
 		var am := ArrayMesh.new()
 		var arrs := RenderingServer.mesh_surface_get_arrays(chunk_renderer.meshes[Vector3i.ZERO], 0)
 		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrs)
+		am.surface_set_material(0, preload("res://world/rendering/chunk_material.tres"))
+		am.custom_aabb = AABB(Vector3.ONE * -1000, Vector3.ONE * 2000)
 		ResourceSaver.save(am, "res://fuck.tres", ResourceSaver.FLAG_BUNDLE_RESOURCES)
 
 

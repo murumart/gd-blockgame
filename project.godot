@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="gd-blockgame"
-run/main_scene="uid://cmkexumlctotr"
+run/main_scene="uid://xv0bwgrtwil2"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="uid://b87bewhjjtpaj"
 

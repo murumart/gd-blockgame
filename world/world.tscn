@@ -1,6 +1,6 @@
-[gd_scene format=3 uid="uid://cmkexumlctotr"]
+[gd_scene format=3 uid="uid://xv0bwgrtwil2"]
 
-[ext_resource type="Script" uid="uid://cufc5snki2oh2" path="res://world/world.gd" id="1_6xmxd"]
+[ext_resource type="Script" uid="uid://cmkexumlctotr" path="res://world/world.gd" id="1_6xmxd"]
 [ext_resource type="Script" uid="uid://bqu8wqj3go0fy" path="res://addons/simple_free_look_camera/camera.gd" id="2_tcf2h"]
 [ext_resource type="Texture2D" uid="uid://b87bewhjjtpaj" path="res://carcinous_scope_incomprehensible.png" id="3_4717r"]
 [ext_resource type="Script" uid="uid://dyj8vy6t2pttm" path="res://util/debug_label.gd" id="3_sc4t8"]
