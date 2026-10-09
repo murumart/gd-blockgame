@@ -22,44 +22,39 @@ var occupancy_maps: Dictionary[Vector3i, Array]
 var adjacency_maps: Dictionary[Vector3i, Array]
 var chunk_load_radius := 8
 
-const MAX_QUEUED_FOR_LOADING := 100
+const MAX_QUEUED_FOR_LOADING := 25
 var _chunks_to_load_queue: Array[Vector3i]
-var _chunk_loader_thread := Thread.new()
-var _chunk_loader_semaph := Semaphore.new()
-var _chunk_loader_mutex := Mutex.new()
-var _THREADACCESS_enough_with_the_chunk_loading := false
-var _THREADACCESS_chunk_to_load := Vector3i()
 var loading_chunk := false
 
 
 func _init(w: World) -> void:
 	world = w
 	print("Chunks::_init : created chunks manager")
-	_chunk_loader_thread.start(_threaded_loading)
 
 
 func cleanup() -> void:
-	_THREADACCESS_enough_with_the_chunk_loading = true
-	_chunk_loader_semaph.post()
-	_chunk_loader_thread.wait_to_finish()
+	if not WorkerThreadPool.is_group_task_completed(_loading_task):
+		WorkerThreadPool.wait_for_group_task_completion(_loading_task)
 
 
 var _last_center := Vector3i.MIN
-func process(center: Vector3i, load_radius: int = chunk_load_radius) -> void:
-	_chunks_to_load_queue.sort_custom(_sort_chunks_by_center_dist.bind(center))
+var _loading_task: int
+var _task_queue: Array[Vector3i]
+
+func process(center: Vector3i) -> void:
+	if loading_chunk:
+		if WorkerThreadPool.is_group_task_completed(_loading_task):
+			WorkerThreadPool.wait_for_group_task_completion(_loading_task)
+			loading_chunk = false
+		else:
+			return
 	_last_center = center
-	if _chunks_to_load_queue.is_empty() or loading_chunk: return
-	_chunk_loader_mutex.lock()
-	_THREADACCESS_chunk_to_load = _chunks_to_load_queue[-1]
-	var dist := _THREADACCESS_chunk_to_load.distance_squared_to(center)
-	while _chunks_to_load_queue.size() > 0 and dist > load_radius * load_radius:
-		_THREADACCESS_chunk_to_load = _chunks_to_load_queue.pop_back()
-		dist = _THREADACCESS_chunk_to_load.distance_squared_to(center)
-	assert(_THREADACCESS_chunk_to_load not in blocks)
-	_chunk_loader_mutex.unlock()
-	#print("Chunks::process : posted semaphore")
+	if _chunks_to_load_queue.is_empty(): return
+	_chunks_to_load_queue.sort_custom(_sort_chunks_by_center_dist)
+	_task_queue = _chunks_to_load_queue.duplicate()
+	_chunks_to_load_queue.clear()
 	loading_chunk = true
-	_chunk_loader_semaph.post()
+	_loading_task = WorkerThreadPool.add_group_task(_threaded_loading, _task_queue.size(), 2, false, "loading chunks")
 
 
 func load_chunks(cpos: Vector3i, load_radius: int = chunk_load_radius) -> void:
@@ -71,8 +66,8 @@ func load_chunks(cpos: Vector3i, load_radius: int = chunk_load_radius) -> void:
 			while checkpos.x - cpos.x <= load_radius:
 				var dist := (checkpos).distance_squared_to(cpos)
 				#print("Chunks::load_chunks : distance from center at %s: %s" % [checkpos, dist])
-				if dist <= load_radius * load_radius:
-					_queue_chunk_load(checkpos, cpos)
+				if dist <= load_radius * load_radius and checkpos not in _chunks_to_load_queue and not checkpos in blocks:
+					_queue_chunk_load(checkpos)
 				checkpos.x += 1
 			checkpos.y += 1
 		checkpos.z += 1
@@ -85,12 +80,12 @@ func unload_chunks(center: Vector3i, load_radius: int = chunk_load_radius) -> vo
 			destroy_chunk(cpos)
 
 
-func _queue_chunk_load(cpos: Vector3i, center: Vector3i) -> void:
+func _queue_chunk_load(cpos: Vector3i) -> void:
+	assert(cpos not in blocks)
+	assert(cpos not in _chunks_to_load_queue)
 	if _chunks_to_load_queue.size() > MAX_QUEUED_FOR_LOADING:
 		return
-	if cpos in blocks or cpos in _chunks_to_load_queue:
-		return
-	var ix := _chunks_to_load_queue.bsearch_custom(cpos, _sort_chunks_by_center_dist.bind(center))
+	var ix := _chunks_to_load_queue.bsearch_custom(cpos, _sort_chunks_by_center_dist)
 	_chunks_to_load_queue.insert(ix, cpos)
 
 
@@ -101,6 +96,9 @@ func _chunk_created(
 	adj: Array[PackedInt64Array],
 	f: int,
 ) -> void:
+	if not not blocks.has(pos): return
+	if not pos not in flags: return
+	if not pos not in adjacency_maps: return
 	assert(not blocks.has(pos))
 	assert(pos not in flags)
 	assert(pos not in adjacency_maps)
@@ -113,30 +111,18 @@ func _chunk_created(
 	adjacency_maps[pos] = adj
 	flags[pos] = f
 	chunk_created.emit(pos)
-	(func() -> void:
-		var n := Sprite3D.new()
-		n.texture = preload("res://carcinous_scope_incomprehensible.png")
-		n.position = Vector3(pos * CHUNK_SIZE) + CHUNK_SIZE * 0.5
-		n.set_meta("pos", pos)
-		world.add_child(n)
-	).call_deferred()
 
 
-func _threaded_loading() -> void:
-	while true:
-		#print("Chunks::_threaded_loading : waiting for post")
-		_chunk_loader_semaph.wait()
-		_chunk_loader_mutex.lock()
-		if _THREADACCESS_enough_with_the_chunk_loading: break
-		var pos := _THREADACCESS_chunk_to_load
-		_chunk_loader_mutex.unlock()
-		#print("Chunks::_threaded_loading : starting with position ", pos)
-		var b: PackedByteArray
-		var occ: Array[PackedInt64Array]
-		var adj: Array[PackedInt64Array]
-		var f: PackedInt64Array; f.resize(1)
-		_create_chunk(pos, b, occ, adj, f)
-		_chunk_created.call_deferred(pos, b, occ, adj, f[0])
+func _threaded_loading(ix: int) -> void:
+	if ix >= _task_queue.size():
+		return
+	var pos := _task_queue[ix]
+	var b: PackedByteArray
+	var occ: Array[PackedInt64Array]
+	var adj: Array[PackedInt64Array]
+	var f: PackedInt64Array; f.resize(1) # int as reference
+	_create_chunk(pos, b, occ, adj, f)
+	_chunk_created.call_deferred(pos, b, occ, adj, f[0])
 
 
 func _create_chunk(
@@ -252,5 +238,5 @@ func _generate_adjacency_maps(
 	#print("Chunks::_generate_adjacency_maps : adjacency ", adjacency)
 
 
-func _sort_chunks_by_center_dist(a: Vector3i, b: Vector3i, center: Vector3i) -> bool:
-	return a.distance_squared_to(center) > b.distance_squared_to(center)
+func _sort_chunks_by_center_dist(a: Vector3i, b: Vector3i) -> bool:
+	return a.distance_squared_to(_last_center) < b.distance_squared_to(_last_center)

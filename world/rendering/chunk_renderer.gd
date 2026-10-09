@@ -90,7 +90,7 @@ func _create_chunk_render(pos: Vector3i) -> void:
 
 func _on_chunk_destroyed(pos: Vector3i) -> void:
 	if pos in instances:
-		print("ChunkRenderer::_on_chunk_destroyed : a rendered chunk at ", pos, " was destroyed, freeing")
+		#print("ChunkRenderer::_on_chunk_destroyed : a rendered chunk at ", pos, " was destroyed, freeing")
 		rs.free_rid(instances[pos])
 		instances.erase(pos)
 		rs.free_rid(meshes[pos])

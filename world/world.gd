@@ -8,6 +8,8 @@ const SECONDS_PER_TICK := 1.0 / TICKS_PER_SECOND
 var chunks: Chunks
 var chunk_renderer: ChunkRenderer
 
+var _ticks := 0
+
 
 func _ready() -> void:
 	chunks = Chunks.new(self)
@@ -42,6 +44,7 @@ func tick() -> void:
 	chunk_renderer.display_target_update(center_cpos)
 	if center_cpos != last_center_cpos:
 		last_center_cpos = center_cpos
+	_ticks += 1
 
 
 func get_center_chunk() -> Vector3i:
