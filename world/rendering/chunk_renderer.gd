@@ -103,7 +103,7 @@ func mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
 	var ia: Array
 	ia.resize(am.ARRAY_MAX)
 
-	var vx: PackedVector3Array
+	var vx: PackedVector2Array
 	var ix: PackedInt32Array
 	ia[am.ARRAY_VERTEX] = vx
 	ia[am.ARRAY_INDEX] = ix
@@ -122,7 +122,7 @@ func mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
 		var vtx2: Vector3i = _FACE_VTICES[axisi][1]
 		var vtx3: Vector3i = _FACE_VTICES[axisi][2]
 		var vtx4: Vector3i = _FACE_VTICES[axisi][3]
-		var normal: _FaceNormalIx = _FACE_NORMALS[axisi]
+		var normal: _FaceNormalIx = (axisi + 1) as _FaceNormalIx
 
 		for ax: int in axis[1].x: for ay: int in axis[1].y:
 			vpos[axaxis] = ax
@@ -154,6 +154,7 @@ static var _FACE_VTICES: Array[Array] = [
 ]
 
 enum _FaceNormalIx {
+	INVALID,
 	BACK,
 	UP,
 	RIGHT,
@@ -162,16 +163,6 @@ enum _FaceNormalIx {
 	LEFT,
 }
 
-static var _FACE_NORMALS := [
-	_FaceNormalIx.BACK,
-	_FaceNormalIx.UP,
-	_FaceNormalIx.RIGHT,
-	_FaceNormalIx.FORWARD,
-	_FaceNormalIx.DOWN,
-	_FaceNormalIx.LEFT,
-]
-
-static var fle := FileAccess.open("res://shit.txt", FileAccess.WRITE_READ)
 static func _append_face(
 	pos: Vector3i,
 
@@ -181,7 +172,7 @@ static func _append_face(
 	vtx4: Vector3i,
 	normal: _FaceNormalIx,
 
-	vx: PackedVector3Array,
+	vx: PackedVector2Array,
 	ix: PackedInt32Array,
 	vxix: int,
 ) -> int:
@@ -189,8 +180,7 @@ static func _append_face(
 	pba.resize(12)
 
 	var pos1 := Vector3i()
-	var vertex := Vector3(NAN, NAN, NAN)
-	fle.store_line("appending face at pos %s" % pos)
+	var vertex := Vector2(NAN, NAN)
 
 	pos1 = pos + vtx1
 	pba.encode_u8(0, pos1.x)
@@ -198,12 +188,9 @@ static func _append_face(
 	pba.encode_u8(2, pos1.z)
 	pba.encode_u8(3, int(normal))
 	vertex.x = pba.decode_float(0)
-	#vertex.y = unset
-	#vertex.z = unset
+	#vertex.y = vertex.x
 	vx.append(vertex)
 	pba.encode_float(0, vertex.x)
-	fle.store_line("  x:%s, y:%s, z:%s, encode:v3(%s),u32(%s),b(%s),bytes(%s,%s,%s,%s)" % [pos1.x, pos1.y, pos1.z, vertex, pba.decode_u32(0), String.num_uint64(pba.decode_u32(0), 2).lpad(32, "0"), pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3)])
-	fle.store_line("  from:bytes(%s,%s,%s,%s)" % [pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3)])
 
 	pos1 = pos + vtx2
 	pba.encode_u8(0, pos1.x)
@@ -211,10 +198,8 @@ static func _append_face(
 	pba.encode_u8(2, pos1.z)
 	pba.encode_u8(3, int(normal))
 	vertex.x = pba.decode_float(0)
-	#vertex.y = unset
-	#vertex.z = unset
+	#vertex.y = vertex.x
 	vx.append(vertex)
-	fle.store_line("  x:%s, y:%s, z:%s, encode:v3(%s),u32(%s),b(%s),bytes(%s,%s,%s,%s)" % [pos1.x, pos1.y, pos1.z, vertex, pba.decode_u32(0), String.num_uint64(pba.decode_u32(0), 2).lpad(32, "0"), pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3)])
 
 	pos1 = pos + vtx3
 	pba.encode_u8(0, pos1.x)
@@ -222,10 +207,8 @@ static func _append_face(
 	pba.encode_u8(2, pos1.z)
 	pba.encode_u8(3, int(normal))
 	vertex.x = pba.decode_float(0)
-	#vertex.y = unset
-	#vertex.z = unset
+	#vertex.y = vertex.x
 	vx.append(vertex)
-	fle.store_line("  x:%s, y:%s, z:%s, encode:v3(%s),u32(%s),b(%s),bytes(%s,%s,%s,%s)" % [pos1.x, pos1.y, pos1.z, vertex, pba.decode_u32(0), String.num_uint64(pba.decode_u32(0), 2).lpad(32, "0"), pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3)])
 
 	pos1 = pos + vtx4
 	pba.encode_u8(0, pos1.x)
@@ -233,14 +216,11 @@ static func _append_face(
 	pba.encode_u8(2, pos1.z)
 	pba.encode_u8(3, int(normal))
 	vertex.x = pba.decode_float(0)
-	#vertex.y = unset
-	#vertex.z = unset
+	#vertex.y = vertex.x
 	vx.append(vertex)
-	fle.store_line("  x:%s, y:%s, z:%s, encode:v3(%s),u32(%s),b(%s),bytes(%s,%s,%s,%s)" % [pos1.x, pos1.y, pos1.z, vertex, pba.decode_u32(0), String.num_uint64(pba.decode_u32(0), 2).lpad(32, "0"), pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3)])
 
 	ix.append(vxix + 0); ix.append(vxix + 1); ix.append(vxix + 2)
 	ix.append(vxix + 2); ix.append(vxix + 3); ix.append(vxix + 0)
-	fle.store_8(ord("\n"))
 	
 	return vxix + 4
 

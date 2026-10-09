@@ -1,4 +1,8 @@
-class_name Debug_PerformanceTest extends RefCounted
+class_name Debug_PerformanceTest extends Node
+
+
+func _ready() -> void:
+	decodes()
 
 
 # Debug_PerformanceTest::_debruijin_vs_other : time1: 20233
@@ -59,3 +63,18 @@ static func _other_ntz(n: int) -> int:
 
 
 	return bits
+	
+
+static func decodes() -> void:
+	var pba := PackedByteArray()
+	pba.resize(4)
+	pba.encode_u32(0, 0b0_1111_1111_10000000000000000000000)
+	print(pba)
+	var f := pba.decode_float(0)
+	print(f)
+	var v := Vector2(f, 0)
+	print(v)
+	pba.encode_u32(0, 0)
+	print(pba)
+	pba.encode_float(0, v.x)
+	print(pba)

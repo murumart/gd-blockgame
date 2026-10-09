@@ -160,6 +160,7 @@ func _create_chunk(
 			if y + wp.y < ylvl - cos((x + wp.x) * 0.035) * 5:
 				bd[ix] = 1
 			ix += 1
+	#bd[0] = 1
 
 	#var starttime := Time.get_ticks_usec()
 	_generate_occupancy_maps(bd, occ)

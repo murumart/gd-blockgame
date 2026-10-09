@@ -2,7 +2,12 @@ shader_type spatial;
 
 render_mode unshaded;
 
-const vec3 NORMAL_TABLE[6] = vec3[6] (
+const vec3 NORMAL_TABLE[7] = vec3[7] (
+	// invalid value
+	// i have no idea why, but i can't just have 0 passed in
+	// as the normal index. for whatever reason, it just treats
+	// the rest of the data as 0 then
+	vec3(0, 0, 0),
 	vec3(0, 0, 1),
 	vec3(0, 1, 0),
 	vec3(1, 0, 0),
@@ -13,27 +18,16 @@ const vec3 NORMAL_TABLE[6] = vec3[6] (
 
 void vertex() {
 	float ogx = VERTEX.x;
-	uint bytes4 = floatBitsToUint(VERTEX.x);
+	uint bytes4 = floatBitsToUint(ogx);
 	NORMAL = NORMAL_TABLE[bitfieldExtract(bytes4, 24, 3)];
 	VERTEX = vec3(
 		float(bitfieldExtract(bytes4, 0, 8)),
 		float(bitfieldExtract(bytes4, 8, 8)),
 		float(bitfieldExtract(bytes4, 16, 8)));
-	if (ogx == 0.0) {
-		VERTEX.y += sin(float(VERTEX_ID));
-		VERTEX.z += cos(float(VERTEX_ID));
-	}
 	COLOR = vec4(vec3(0.1) + abs(NORMAL * 0.5) + NORMAL * 0.25, 1.0);
-	//if (posx == 0u || posy == 0u || posz == 0u) COLOR = vec4(0.0, 0.0, 0.0, 1.0);
-	//if (posx == 0u) COLOR.b = 1.0;
-	//if (posz == 0u) COLOR.r = 1.0;
-	//if (posy == 0u) COLOR.g = 1.0;
-
-	//VERTEX.x += sin(TIME + VERTEX.y);
 }
 
 void fragment() {
-	//ALBEDO = vec3(0.5) - NORMAL * 0.5;
 	ALBEDO = COLOR.xyz;
 }
 
