@@ -22,6 +22,14 @@ material = SubResource("StandardMaterial3D_4papg")
 flip_faces = true
 size = Vector3(1.01, 1.01, 1.01)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3d7it"]
+transparency = 4
+blend_mode = 1
+albedo_color = Color(1, 1, 0.40392157, 0.27058825)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xos6n"]
+material = SubResource("StandardMaterial3D_3d7it")
+
 [node name="World" type="Node3D" unique_id=1071118404 node_paths=PackedStringArray("chunk_load_center")]
 script = ExtResource("1_6xmxd")
 chunk_load_center = NodePath(".")
@@ -74,3 +82,8 @@ mesh = SubResource("BoxMesh_sc4t8")
 [node name="Debug_Binds" type="Node" parent="." unique_id=82927570]
 script = ExtResource("5_mmdvd")
 metadata/_custom_type_script = "uid://uqi1qc0cl1sc"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1693804637]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.5, 0.5)
+visible = false
+mesh = SubResource("BoxMesh_xos6n")

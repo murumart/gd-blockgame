@@ -20,7 +20,7 @@ var blocks: Dictionary[Vector3i, PackedByteArray] = {}
 var flags: Dictionary[Vector3i, int]
 var occupancy_maps: Dictionary[Vector3i, Array]
 var adjacency_maps: Dictionary[Vector3i, Array]
-var chunk_load_radius := 0
+var chunk_load_radius := 8
 
 const MAX_QUEUED_FOR_LOADING := 100
 var _chunks_to_load_queue: Array[Vector3i]
@@ -47,8 +47,7 @@ func cleanup() -> void:
 var _last_center := Vector3i.MIN
 func process(center: Vector3i, load_radius: int = chunk_load_radius) -> void:
 	_chunks_to_load_queue.sort_custom(_sort_chunks_by_center_dist.bind(center))
-	if _last_center != center:
-		_last_center = center
+	_last_center = center
 	if _chunks_to_load_queue.is_empty() or loading_chunk: return
 	_chunk_loader_mutex.lock()
 	_THREADACCESS_chunk_to_load = _chunks_to_load_queue[-1]
@@ -153,14 +152,16 @@ func _create_chunk(
 
 	# debug worldgen
 	var wp := pos * CHUNK_SIZE
-	var ix := 0
-	for z in CHUNK_SIZE.z:
-		var ylvl := sin((z + wp.z) * 0.05) * 5 + CHUNK_SIZE.y * 0.5
-		for y in CHUNK_SIZE.y: for x in CHUNK_SIZE.x:
-			if y + wp.y < ylvl - cos((x + wp.x) * 0.035) * 5:
-				bd[ix] = 1
-			ix += 1
-	#bd[0] = 1
+	if true:
+		var ix := 0
+		for z in CHUNK_SIZE.z:
+			var ylvl := sin((z + wp.z) * 0.05) * 5 + CHUNK_SIZE.y * 0.5
+			for y in CHUNK_SIZE.y: for x in CHUNK_SIZE.x:
+				if y + wp.y < ylvl - cos((x + wp.x) * 0.035) * 5:
+					bd[ix] = 1
+				ix += 1
+	else:
+		bd[0] = 1
 
 	#var starttime := Time.get_ticks_usec()
 	_generate_occupancy_maps(bd, occ)

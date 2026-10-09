@@ -104,9 +104,8 @@ func mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
 	ia.resize(am.ARRAY_MAX)
 
 	var vx: PackedVector2Array
-	var ix: PackedInt32Array
+	var ix: PackedInt32Array # unused..
 	ia[am.ARRAY_VERTEX] = vx
-	ia[am.ARRAY_INDEX] = ix
 
 	var vxix := 0
 
@@ -121,7 +120,6 @@ func mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
 		var vtx1: Vector3i = _FACE_VTICES[axisi][0]
 		var vtx2: Vector3i = _FACE_VTICES[axisi][1]
 		var vtx3: Vector3i = _FACE_VTICES[axisi][2]
-		var vtx4: Vector3i = _FACE_VTICES[axisi][3]
 		var normal: _FaceNormalIx = (axisi + 1) as _FaceNormalIx
 
 		for ax: int in axis[1].x: for ay: int in axis[1].y:
@@ -133,7 +131,7 @@ func mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
 				if line & 1:
 					vxix = _append_face(
 						vpos,
-						vtx1, vtx2, vtx3, vtx4,
+						vtx1, vtx2, vtx3,
 						normal,
 						vx, ix, vxix,
 					)
@@ -145,12 +143,12 @@ func mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
 
 
 static var _FACE_VTICES: Array[Array] = [
-	[Vector3i(0, 0, 0), Vector3i(0, 1, 0), Vector3i(1, 1, 0), Vector3i(1, 0, 0)], # +z
-	[Vector3i(0, 0, 0), Vector3i(1, 0, 0), Vector3i(1, 0, 1), Vector3i(0, 0, 1)], # +y
-	[Vector3i(0, 0, 0), Vector3i(0, 0, 1), Vector3i(0, 1, 1), Vector3i(0, 1, 0)], # +x
-	[Vector3i(0, 0, 0), Vector3i(1, 0, 0), Vector3i(1, 1, 0), Vector3i(0, 1, 0)], # -z
-	[Vector3i(0, 0, 0), Vector3i(0, 0, 1), Vector3i(1, 0, 1), Vector3i(1, 0, 0)], # -y
-	[Vector3i(0, 0, 0), Vector3i(0, 1, 0), Vector3i(0, 1, 1), Vector3i(0, 0, 1)], # -x
+	[Vector3i(0, 0, 0), Vector3i(0, 2, 0), Vector3i(2, 0, 0)], # +z
+	[Vector3i(1, 0, 0), Vector3i(1, 0, 2), Vector3i(-1, 0, 0)], # +y
+	[Vector3i(0, 0, 1), Vector3i(0, 2, 1), Vector3i(0, 0, -1) ], # +x
+	[Vector3i(1, 0, 0), Vector3i(1, 2, 0), Vector3i(-1, 0, 0)], # -z
+	[Vector3i(1, 0, -1), Vector3i(-1, 0, 1), Vector3i(1, 0, 1)], # -y
+	[Vector3i(0, 0, 0), Vector3i(0, 2, 0), Vector3i(0, 0, 2)], # -x
 ]
 
 enum _FaceNormalIx {
@@ -163,13 +161,18 @@ enum _FaceNormalIx {
 	LEFT,
 }
 
+enum _FaceUvIx {
+	Uv00,
+	Uv01,
+	Uv10,
+}
+
 static func _append_face(
 	pos: Vector3i,
 
 	vtx1: Vector3i,
 	vtx2: Vector3i,
 	vtx3: Vector3i,
-	vtx4: Vector3i,
 	normal: _FaceNormalIx,
 
 	vx: PackedVector2Array,
@@ -183,46 +186,36 @@ static func _append_face(
 	var vertex := Vector2(NAN, NAN)
 
 	pos1 = pos + vtx1
-	pba.encode_u8(0, pos1.x)
-	pba.encode_u8(1, pos1.y)
-	pba.encode_u8(2, pos1.z)
-	pba.encode_u8(3, int(normal))
+	pba.encode_s8(0, pos1.x)
+	pba.encode_s8(1, pos1.y)
+	pba.encode_s8(2, pos1.z)
+	pba.encode_u8(3, int(normal) << 3 | _FaceUvIx.Uv00)
 	vertex.x = pba.decode_float(0)
 	#vertex.y = vertex.x
 	vx.append(vertex)
 	pba.encode_float(0, vertex.x)
 
 	pos1 = pos + vtx2
-	pba.encode_u8(0, pos1.x)
-	pba.encode_u8(1, pos1.y)
-	pba.encode_u8(2, pos1.z)
-	pba.encode_u8(3, int(normal))
+	pba.encode_s8(0, pos1.x)
+	pba.encode_s8(1, pos1.y)
+	pba.encode_s8(2, pos1.z)
+	pba.encode_u8(3, int(normal) << 3 | _FaceUvIx.Uv01)
 	vertex.x = pba.decode_float(0)
 	#vertex.y = vertex.x
 	vx.append(vertex)
 
 	pos1 = pos + vtx3
-	pba.encode_u8(0, pos1.x)
-	pba.encode_u8(1, pos1.y)
-	pba.encode_u8(2, pos1.z)
-	pba.encode_u8(3, int(normal))
-	vertex.x = pba.decode_float(0)
-	#vertex.y = vertex.x
-	vx.append(vertex)
-
-	pos1 = pos + vtx4
-	pba.encode_u8(0, pos1.x)
-	pba.encode_u8(1, pos1.y)
-	pba.encode_u8(2, pos1.z)
-	pba.encode_u8(3, int(normal))
+	pba.encode_s8(0, pos1.x)
+	pba.encode_s8(1, pos1.y)
+	pba.encode_s8(2, pos1.z)
+	pba.encode_u8(3, int(normal) << 3 | _FaceUvIx.Uv10)
 	vertex.x = pba.decode_float(0)
 	#vertex.y = vertex.x
 	vx.append(vertex)
 
 	ix.append(vxix + 0); ix.append(vxix + 1); ix.append(vxix + 2)
-	ix.append(vxix + 2); ix.append(vxix + 3); ix.append(vxix + 0)
 	
-	return vxix + 4
+	return vxix + 3
 
 
 static var debruijn_lookup: PackedByteArray = [
