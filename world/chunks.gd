@@ -4,6 +4,7 @@ signal chunk_created(pos: Vector3i)
 signal chunk_destroyed(pos: Vector3i)
 
 const C_CHUNK_SIZE := Vector3i(16, 16, 16)
+const C_CHUNK_SIZEF := Vector3(C_CHUNK_SIZE)
 const C_BLOCKS_PER_CHUNK := C_CHUNK_SIZE.x * C_CHUNK_SIZE.y * C_CHUNK_SIZE.z
 
 static var CHUNK_SIZE := C_CHUNK_SIZE
@@ -20,7 +21,7 @@ var blocks: Dictionary[Vector3i, PackedByteArray] = {}
 var flags: Dictionary[Vector3i, int]
 var occupancy_maps: Dictionary[Vector3i, Array]
 var adjacency_maps: Dictionary[Vector3i, Array]
-var chunk_load_radius := 8
+var chunk_load_radius := 3
 
 const MAX_QUEUED_FOR_LOADING := 25
 var _chunks_to_load_queue: Array[Vector3i]
@@ -51,6 +52,7 @@ func process(center: Vector3i) -> void:
 	_last_center = center
 	if _chunks_to_load_queue.is_empty(): return
 	_chunks_to_load_queue.sort_custom(_sort_chunks_by_center_dist)
+	assert(not loading_chunk)
 	_task_queue = _chunks_to_load_queue.duplicate()
 	_chunks_to_load_queue.clear()
 	loading_chunk = true
@@ -80,6 +82,10 @@ func unload_chunks(center: Vector3i, load_radius: int = chunk_load_radius) -> vo
 			destroy_chunk(cpos)
 
 
+static func block_index(coord: Vector3i) -> int:
+	return coord.x + coord.y * CHUNK_SIZE.x + coord.z * CHUNK_SIZE.x * CHUNK_SIZE.y
+
+
 func _queue_chunk_load(cpos: Vector3i) -> void:
 	assert(cpos not in blocks)
 	assert(cpos not in _chunks_to_load_queue)
@@ -102,7 +108,6 @@ func _chunk_created(
 	assert(not blocks.has(pos))
 	assert(pos not in flags)
 	assert(pos not in adjacency_maps)
-	loading_chunk = false
 	_chunks_to_load_queue.erase(pos)
 	if (pos.distance_squared_to(world.get_center_chunk()) > chunk_load_radius * chunk_load_radius):
 		return # forget everything you know
@@ -114,8 +119,6 @@ func _chunk_created(
 
 
 func _threaded_loading(ix: int) -> void:
-	if ix >= _task_queue.size():
-		return
 	var pos := _task_queue[ix]
 	var b: PackedByteArray
 	var occ: Array[PackedInt64Array]
@@ -138,16 +141,20 @@ func _create_chunk(
 
 	# debug worldgen
 	var wp := pos * CHUNK_SIZE
-	if true:
+	if false:
 		var ix := 0
 		for z in CHUNK_SIZE.z:
 			var ylvl := sin((z + wp.z) * 0.05) * 5 + CHUNK_SIZE.y * 0.5
-			for y in CHUNK_SIZE.y: for x in CHUNK_SIZE.x:
-				if y + wp.y < ylvl - cos((x + wp.x) * 0.035) * 5:
-					bd[ix] = 1
-				ix += 1
+			for y in CHUNK_SIZE.y:
+				var yc := wp.y + y
+				for x in CHUNK_SIZE.x:
+					var lylvl := ylvl - cos((x + wp.x) * 0.035) * 5
+					var topdist := lylvl - yc
+					if yc < lylvl:
+						bd[ix] = randi_range(0, 8)
+					ix += 1
 	else:
-		bd[0] = 1
+		bd[0] = 2
 
 	#var starttime := Time.get_ticks_usec()
 	_generate_occupancy_maps(bd, occ)

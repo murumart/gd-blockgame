@@ -1,8 +1,16 @@
 shader_type spatial;
 
-render_mode unshaded;
+render_mode diffuse_lambert_wrap;
 
-uniform sampler2D atlas;
+uniform sampler2D terrain : filter_nearest;
+uniform uint terrain_atlas_blocks_x;
+uniform uint terrain_atlas_blocks_y;
+uniform uint terrain_atlas_block_size;
+
+const vec3 CHUNK_SIZE = vec3(16, 16, 16);
+const float RANGEM = 1.0;
+
+varying vec2 atlas_spot;
 
 const vec3 NORMAL_TABLE[7] = vec3[7] (
 	// invalid value
@@ -26,20 +34,34 @@ const vec2 UV_TABLE[3] = vec2[3] (
 
 void vertex() {
 	float ogx = VERTEX.x;
+	float ogy = VERTEX.y;
 	uint bytes4u = floatBitsToUint(ogx);
-	int bytes4s = floatBitsToInt(ogx);
-	UV = UV_TABLE[bitfieldExtract(bytes4u, 24, 3)];
-	NORMAL = NORMAL_TABLE[bitfieldExtract(bytes4u, 27, 3)];
-	VERTEX = vec3(
-		float(bitfieldExtract(bytes4s, 0, 8)),
-		float(bitfieldExtract(bytes4s, 8, 8)),
-		float(bitfieldExtract(bytes4s, 16, 8)));
-	COLOR = vec4(vec3(0.1) + abs(NORMAL * 0.5) + NORMAL * 0.25, 1.0);
+	uint bytes4u2 = floatBitsToUint(ogy);
+	vec2 uv = UV_TABLE[bitfieldExtract(bytes4u, 24, 2)];
+	NORMAL = NORMAL_TABLE[bitfieldExtract(bytes4u, 26, 3)];
+	uint tx_index = bitfieldExtract(bytes4u2, 0, 12);
+	//tx_index = clamp(tx_index, 0, terrain_atlas_blocks_x * terrain_atlas_blocks_y - 1u);
+	vec3 vpos = vec3(
+		float(bitfieldExtract(bytes4u, 0, 8)) / RANGEM - 1.0,
+		float(bitfieldExtract(bytes4u, 8, 8)) / RANGEM - 1.0,
+		float(bitfieldExtract(bytes4u, 16, 8)) / RANGEM - 1.0
+	);
+	VERTEX = vpos;
+	UV = uv;
+	UV.y = 1.0 - UV.y;
+	atlas_spot = vec2(
+		float(tx_index % terrain_atlas_blocks_x) / float(terrain_atlas_blocks_x),
+		float(tx_index / terrain_atlas_blocks_y) / float(terrain_atlas_blocks_y)
+	);
+	//COLOR = vec4(vec3(0.1) + abs(NORMAL * 0.5) + NORMAL * 0.25, 1.0);
 }
 
 void fragment() {
-	if (UV.x > 1.0 || UV.y > 1.0) discard;
-	ALBEDO = COLOR.xyz;
+	if (UV.x > 1.0 || UV.y < 0.0) discard;
+	vec2 atlas_size = vec2(float(terrain_atlas_blocks_x), float(terrain_atlas_blocks_y));
+	vec4 sample = texture(terrain, UV / atlas_size + atlas_spot);
+	ALBEDO = COLOR.rgb * sample.rgb;
+	//ALBEDO.rg = atlas_spot;
 }
 
 //void light() {

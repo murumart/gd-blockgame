@@ -1,7 +1,12 @@
 [gd_resource type="ShaderMaterial" format=3 uid="uid://55y5yc10e44i"]
 
 [ext_resource type="Shader" uid="uid://p8jytvr823c0" path="res://world/rendering/chunk_material.gdshader" id="1_ymo37"]
+[ext_resource type="Texture2D" uid="uid://cl2vyc8i1nxb6" path="res://world/terrain.png" id="2_o1jmy"]
 
 [resource]
 render_priority = 0
 shader = ExtResource("1_ymo37")
+shader_parameter/terrain = ExtResource("2_o1jmy")
+shader_parameter/terrain_atlas_blocks_x = 16
+shader_parameter/terrain_atlas_blocks_y = 16
+shader_parameter/terrain_atlas_block_size = 16

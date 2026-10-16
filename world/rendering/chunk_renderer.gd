@@ -59,7 +59,7 @@ func check_meshing() -> void:
 		chunks_to_mesh.pop_back()
 		if cpos not in instances:
 			_create_chunk_render(cpos)
-		mesh_chunk(meshes[cpos], world.chunks.adjacency_maps[cpos])
+		mesh_chunk(meshes[cpos], world.chunks.blocks[cpos], world.chunks.adjacency_maps[cpos])
 		world.chunks.flags[cpos] &= ~Chunks.FLAG_NEEDS_MESHING
 		#print("ChunkRenderer::check_meshing : meshed chunk at ", cpos)
 		to_mesh -= 1
@@ -97,7 +97,7 @@ func _on_chunk_destroyed(pos: Vector3i) -> void:
 		meshes.erase(pos)
 
 
-func mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
+func mesh_chunk(mesh: RID, blocks: PackedByteArray, adjdata: Array[PackedInt64Array]) -> void:
 	rs.mesh_clear(mesh)
 
 	var ia: Array
@@ -127,12 +127,13 @@ func mesh_chunk(mesh: RID, adjdata: Array[PackedInt64Array]) -> void:
 			vpos[ayaxis] = ay
 			vpos[vecaxis] = axisadd
 			var line: int = adjdata[axisi][ax + ay * axis[1].x]
+			var block := blocks[Chunks.block_index(Vector3i(vpos))]
 			while line:
 				if line & 1:
 					vxix = _append_face(
 						vpos,
 						vtx1, vtx2, vtx3,
-						normal,
+						normal, block - 1,
 						vx, ix, vxix,
 					)
 				line = line >> 1
@@ -147,9 +148,10 @@ static var _FACE_VTICES: Array[Array] = [
 	[Vector3i(1, 0, 0), Vector3i(1, 0, 2), Vector3i(-1, 0, 0)], # +y
 	[Vector3i(0, 0, 1), Vector3i(0, 2, 1), Vector3i(0, 0, -1) ], # +x
 	[Vector3i(1, 0, 0), Vector3i(1, 2, 0), Vector3i(-1, 0, 0)], # -z
-	[Vector3i(1, 0, -1), Vector3i(-1, 0, 1), Vector3i(1, 0, 1)], # -y
+	[Vector3i(1, 0, 0), Vector3i(-1, 0, 0), Vector3i(1, 0, 2)], # -y
 	[Vector3i(0, 0, 0), Vector3i(0, 2, 0), Vector3i(0, 0, 2)], # -x
 ]
+
 
 enum _FaceNormalIx {
 	INVALID,
@@ -168,53 +170,89 @@ enum _FaceUvIx {
 }
 
 static func _append_face(
-	pos: Vector3i,
+	pos: Vector3,
 
-	vtx1: Vector3i,
-	vtx2: Vector3i,
-	vtx3: Vector3i,
+	vtx1: Vector3,
+	vtx2: Vector3,
+	vtx3: Vector3,
 	normal: _FaceNormalIx,
+	texture: int,
 
 	vx: PackedVector2Array,
 	ix: PackedInt32Array,
 	vxix: int,
 ) -> int:
 	var pba := PackedByteArray()
-	pba.resize(12)
+	pba.resize(8)
 
-	var pos1 := Vector3i()
+	const RANGEM := 1.0
+
+	var pos1 := Vector3()
 	var vertex := Vector2(NAN, NAN)
+	# both 32 bits pls
+	var f1 := 0
+	var f2 := 0
 
+	# Vertex Format
+	#
+	# 1st float
+	# 000nnnUV zzzzzzz yyyyyyyy xxxxxxxx
+	#    ^^^ ^                       ^ pos (only use 0..18 range with this chunk size)
+	#  norm  uv
+	#
+	# 2nd float
+	# 00000000 00000000 0000txtx txtxtxtx
+	#                                  ^ texture index in block atlas
 	pos1 = pos + vtx1
-	pba.encode_s8(0, pos1.x)
-	pba.encode_s8(1, pos1.y)
-	pba.encode_s8(2, pos1.z)
-	pba.encode_u8(3, int(normal) << 3 | _FaceUvIx.Uv00)
+	f1 = (
+		int((pos1.x + 1.0) * RANGEM)
+		| (int((pos1.y + 1.0) * RANGEM) << 8)
+		| (int((pos1.z + 1.0) * RANGEM) << 16)
+		| (_FaceUvIx.Uv00 << 24)
+		|  (normal << 26)
+	)
+	pba.encode_u32(0, f1)
+	f2 = texture
+	pba.encode_u32(4, f2)
+	pba.encode_half(6, 69.420) # hack to get the shader to recognise values in front of this
 	vertex.x = pba.decode_float(0)
-	#vertex.y = vertex.x
+	vertex.y = pba.decode_float(4)
 	vx.append(vertex)
-	pba.encode_float(0, vertex.x)
 
 	pos1 = pos + vtx2
-	pba.encode_s8(0, pos1.x)
-	pba.encode_s8(1, pos1.y)
-	pba.encode_s8(2, pos1.z)
-	pba.encode_u8(3, int(normal) << 3 | _FaceUvIx.Uv01)
+	f1 = (
+		int((pos1.x + 1.0) * RANGEM)
+		| (int((pos1.y + 1.0) * RANGEM) << 8)
+		| (int((pos1.z + 1.0) * RANGEM) << 16)
+		| (_FaceUvIx.Uv01 << 24)
+		|  (normal << 26)
+	)
+	pba.encode_u32(0, f1)
+	f2 = texture & 0x0FFF
+	pba.encode_u32(4, f2)
+	pba.encode_half(6, 69.420)
 	vertex.x = pba.decode_float(0)
-	#vertex.y = vertex.x
+	vertex.y = pba.decode_float(4)
 	vx.append(vertex)
 
 	pos1 = pos + vtx3
-	pba.encode_s8(0, pos1.x)
-	pba.encode_s8(1, pos1.y)
-	pba.encode_s8(2, pos1.z)
-	pba.encode_u8(3, int(normal) << 3 | _FaceUvIx.Uv10)
+	f1 = (
+		int((pos1.x + 1.0) * RANGEM)
+		| (int((pos1.y + 1.0) * RANGEM) << 8)
+		| (int((pos1.z + 1.0) * RANGEM) << 16)
+		| (_FaceUvIx.Uv10 << 24)
+		|  (normal << 26)
+	)
+	pba.encode_u32(0, f1)
+	f2 = texture & 0x0FFF
+	pba.encode_u32(4, f2)
+	pba.encode_half(6, 69.420)
 	vertex.x = pba.decode_float(0)
-	#vertex.y = vertex.x
+	vertex.y = pba.decode_float(4)
 	vx.append(vertex)
 
 	ix.append(vxix + 0); ix.append(vxix + 1); ix.append(vxix + 2)
-	
+
 	return vxix + 3
 
 
