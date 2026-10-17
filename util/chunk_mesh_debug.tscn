@@ -1,8 +1,10 @@
 [gd_scene format=3 uid="uid://ot1hpqfily6a"]
 
+[ext_resource type="ArrayMesh" uid="uid://c0l1p3luwcso" path="res://world/rendering/meshtest.tres" id="1_c6fb2"]
 [ext_resource type="Script" uid="uid://c7sjx7pd1idwf" path="res://util/performance_test.gd" id="2_c6fb2"]
 
 [node name="MeshInstance3D" type="MeshInstance3D" unique_id=1720942817]
+mesh = ExtResource("1_c6fb2")
 
 [node name="Debug_PerformanceTest" type="Node" parent="." unique_id=343580800]
 script = ExtResource("2_c6fb2")

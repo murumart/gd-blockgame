@@ -141,7 +141,7 @@ func _create_chunk(
 
 	# debug worldgen
 	var wp := pos * CHUNK_SIZE
-	if false:
+	if true:
 		var ix := 0
 		for z in CHUNK_SIZE.z:
 			var ylvl := sin((z + wp.z) * 0.05) * 5 + CHUNK_SIZE.y * 0.5

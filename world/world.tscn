@@ -71,8 +71,9 @@ mesh = SubResource("ImmediateMesh_dtglo")
 script = ExtResource("5_fn3g3")
 world = NodePath("..")
 
-[node name="Debug_Binds" type="Node" parent="." unique_id=82927570]
+[node name="Debug_Binds" type="Node" parent="." unique_id=82927570 node_paths=PackedStringArray("world")]
 script = ExtResource("5_mmdvd")
+world = NodePath("..")
 metadata/_custom_type_script = "uid://uqi1qc0cl1sc"
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1693804637]

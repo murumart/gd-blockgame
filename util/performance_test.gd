@@ -63,18 +63,23 @@ static func _other_ntz(n: int) -> int:
 
 
 	return bits
-	
+
 
 static func decodes() -> void:
 	var pba := PackedByteArray()
-	pba.resize(4)
-	pba.encode_u32(0, 0b0_1111_1111_10000000000000000000000)
-	print(pba)
-	var f := pba.decode_float(0)
-	print(f)
-	var v := Vector2(f, 0)
-	print(v)
-	pba.encode_u32(0, 0)
-	print(pba)
-	pba.encode_float(0, v.x)
-	print(pba)
+	pba.resize(8)
+	const RANGEM := 1.0
+	var pos1 := Vector3(0, 0, 1)
+	var f1 := (
+		int((pos1.x + 1.0) * RANGEM)
+		| (int((pos1.y + 1.0) * RANGEM) << 8)
+		| (int((pos1.z + 1.0) * RANGEM) << 16)
+		| (0 << 24)
+		| (1 << 26)
+		| (1 << 32)
+		| (1 << 62) # hack to get the shader to recognise values in front of this
+	)
+	pba.encode_u64(0, f1)
+	print("\tX1000000000000000000txtxtxtxtxtx000nnnUVzzzzzzzzyyyyyyyyxxxxxxxx")
+	print("\t%s x:%s y:%s z:%s uv:%s n:%s tx:%s; pos1:%s" % [String.num_uint64(f1, 2).pad_zeros(64), pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3) & 0b11, (pba.decode_u8(3) & 0b11100) >> 2, pba.decode_u16(4) & 0b111111111111, pos1])
+	print("\t%s" % String.num_uint64(f1, 2).pad_zeros(64))

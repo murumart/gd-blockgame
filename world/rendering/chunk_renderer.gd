@@ -123,13 +123,16 @@ func mesh_chunk(mesh: RID, blocks: PackedByteArray, adjdata: Array[PackedInt64Ar
 		var normal: _FaceNormalIx = (axisi + 1) as _FaceNormalIx
 
 		for ax: int in axis[1].x: for ay: int in axis[1].y:
+			var axisaddv := Vector3()
 			vpos[axaxis] = ax
 			vpos[ayaxis] = ay
 			vpos[vecaxis] = axisadd
+			axisaddv[vecaxis] = axisadd
 			var line: int = adjdata[axisi][ax + ay * axis[1].x]
-			var block := blocks[Chunks.block_index(Vector3i(vpos))]
 			while line:
 				if line & 1:
+					var block := blocks[Chunks.block_index(Vector3i(vpos - axisaddv))]
+					assert(block > 0) # cant be 0 here because air isnt in occupancy
 					vxix = _append_face(
 						vpos,
 						vtx1, vtx2, vtx3,
@@ -169,6 +172,7 @@ enum _FaceUvIx {
 	Uv10,
 }
 
+#static var debugfile := FileAccess.open("res://debug_out.txt", FileAccess.WRITE_READ)
 static func _append_face(
 	pos: Vector3,
 
@@ -182,6 +186,7 @@ static func _append_face(
 	ix: PackedInt32Array,
 	vxix: int,
 ) -> int:
+	assert(texture >= 0)
 	var pba := PackedByteArray()
 	pba.resize(8)
 
@@ -189,9 +194,10 @@ static func _append_face(
 
 	var pos1 := Vector3()
 	var vertex := Vector2(NAN, NAN)
-	# both 32 bits pls
 	var f1 := 0
-	var f2 := 0
+
+	#debugfile.store_line("face at %s, norm %s, tx %s, vtx 1 %s 2 %s 3 %s" % [pos, _FaceNormalIx.find_key(normal), texture, vtx1, vtx2, vtx3]);
+	#debugfile.store_line("\tX1000000000000000000txtxtxtxtxtx000nnnUVzzzzzzzzyyyyyyyyxxxxxxxx")
 
 	# Vertex Format
 	#
@@ -201,22 +207,22 @@ static func _append_face(
 	#  norm  uv
 	#
 	# 2nd float
-	# 00000000 00000000 0000txtx txtxtxtx
-	#                                  ^ texture index in block atlas
+	# 01000000 00000000 0000txtx txtxtxtx
+	#  ^ hack bit                       ^ texture index in block atlas
 	pos1 = pos + vtx1
 	f1 = (
 		int((pos1.x + 1.0) * RANGEM)
 		| (int((pos1.y + 1.0) * RANGEM) << 8)
 		| (int((pos1.z + 1.0) * RANGEM) << 16)
 		| (_FaceUvIx.Uv00 << 24)
-		|  (normal << 26)
+		| (normal << 26)
+		| (texture << 32)
+		| (1 << 62) # hack to get the shader to recognise values in front of this
 	)
-	pba.encode_u32(0, f1)
-	f2 = texture
-	pba.encode_u32(4, f2)
-	pba.encode_half(6, 69.420) # hack to get the shader to recognise values in front of this
+	pba.encode_u64(0, f1)
 	vertex.x = pba.decode_float(0)
 	vertex.y = pba.decode_float(4)
+	#debugfile.store_line("\t%s x:%s y:%s z:%s uv:%s n:%s tx:%s; vtx:%s pos1:%s" % [String.num_uint64(f1, 2).pad_zeros(64), pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3) & 0b11, (pba.decode_u8(3) & 0b11100) >> 2, pba.decode_u16(4) & 0b111111111111, vertex, pos1])
 	vx.append(vertex)
 
 	pos1 = pos + vtx2
@@ -225,14 +231,14 @@ static func _append_face(
 		| (int((pos1.y + 1.0) * RANGEM) << 8)
 		| (int((pos1.z + 1.0) * RANGEM) << 16)
 		| (_FaceUvIx.Uv01 << 24)
-		|  (normal << 26)
+		| (normal << 26)
+		| (texture << 32)
+		| (1 << 62) # hack to get the shader to recognise values in front of this
 	)
 	pba.encode_u32(0, f1)
-	f2 = texture & 0x0FFF
-	pba.encode_u32(4, f2)
-	pba.encode_half(6, 69.420)
 	vertex.x = pba.decode_float(0)
 	vertex.y = pba.decode_float(4)
+	#debugfile.store_line("\t%s x:%s y:%s z:%s uv:%s n:%s tx:%s; vtx:%s pos1:%s" % [String.num_uint64(f1, 2).pad_zeros(64), pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3) & 0b11, (pba.decode_u8(3) & 0b11100) >> 2, pba.decode_u16(4) & 0b111111111111, vertex, pos1])
 	vx.append(vertex)
 
 	pos1 = pos + vtx3
@@ -241,14 +247,14 @@ static func _append_face(
 		| (int((pos1.y + 1.0) * RANGEM) << 8)
 		| (int((pos1.z + 1.0) * RANGEM) << 16)
 		| (_FaceUvIx.Uv10 << 24)
-		|  (normal << 26)
+		| (normal << 26)
+		| (texture << 32)
+		| (1 << 62) # hack to get the shader to recognise values in front of this
 	)
 	pba.encode_u32(0, f1)
-	f2 = texture & 0x0FFF
-	pba.encode_u32(4, f2)
-	pba.encode_half(6, 69.420)
 	vertex.x = pba.decode_float(0)
 	vertex.y = pba.decode_float(4)
+	#debugfile.store_line("\t%s x:%s y:%s z:%s uv:%s n:%s tx:%s; vtx:%s pos1:%s" % [String.num_uint64(f1, 2).pad_zeros(64), pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3) & 0b11, (pba.decode_u8(3) & 0b11100) >> 2, pba.decode_u16(4) & 0b111111111111, vertex, pos1])
 	vx.append(vertex)
 
 	ix.append(vxix + 0); ix.append(vxix + 1); ix.append(vxix + 2)

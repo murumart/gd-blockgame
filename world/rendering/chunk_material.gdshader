@@ -2,7 +2,7 @@ shader_type spatial;
 
 render_mode diffuse_lambert_wrap;
 
-uniform sampler2D terrain : filter_nearest;
+uniform sampler2D terrain : filter_nearest, repeat_disable, source_color;
 uniform uint terrain_atlas_blocks_x;
 uniform uint terrain_atlas_blocks_y;
 uniform uint terrain_atlas_block_size;
@@ -40,7 +40,6 @@ void vertex() {
 	vec2 uv = UV_TABLE[bitfieldExtract(bytes4u, 24, 2)];
 	NORMAL = NORMAL_TABLE[bitfieldExtract(bytes4u, 26, 3)];
 	uint tx_index = bitfieldExtract(bytes4u2, 0, 12);
-	//tx_index = clamp(tx_index, 0, terrain_atlas_blocks_x * terrain_atlas_blocks_y - 1u);
 	vec3 vpos = vec3(
 		float(bitfieldExtract(bytes4u, 0, 8)) / RANGEM - 1.0,
 		float(bitfieldExtract(bytes4u, 8, 8)) / RANGEM - 1.0,
@@ -61,7 +60,8 @@ void fragment() {
 	vec2 atlas_size = vec2(float(terrain_atlas_blocks_x), float(terrain_atlas_blocks_y));
 	vec4 sample = texture(terrain, UV / atlas_size + atlas_spot);
 	ALBEDO = COLOR.rgb * sample.rgb;
-	//ALBEDO.rg = atlas_spot;
+	//ALBEDO = vec3(0.0);
+	//ALBEDO.rg = UV / atlas_size + atlas_spot;
 }
 
 //void light() {
