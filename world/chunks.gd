@@ -21,7 +21,7 @@ var blocks: Dictionary[Vector3i, PackedByteArray] = {}
 var flags: Dictionary[Vector3i, int]
 var occupancy_maps: Dictionary[Vector3i, Array]
 var adjacency_maps: Dictionary[Vector3i, Array]
-var chunk_load_radius := 3
+var chunk_load_radius := 8
 
 const MAX_QUEUED_FOR_LOADING := 25
 var _chunks_to_load_queue: Array[Vector3i]

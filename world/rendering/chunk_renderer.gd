@@ -44,7 +44,7 @@ func display_target_update(pos: Vector3i) -> void:
 
 
 func check_meshing() -> void:
-	var to_mesh := 5
+	var to_mesh := 1
 	while to_mesh:
 		if chunks_to_mesh.is_empty(): return
 		var cpos: Vector3i = chunks_to_mesh[-1]
@@ -103,9 +103,17 @@ func mesh_chunk(mesh: RID, blocks: PackedByteArray, adjdata: Array[PackedInt64Ar
 	var ia: Array
 	ia.resize(am.ARRAY_MAX)
 
+	var vtices := fill_arrays(ia, blocks, adjdata)
+
+	if vtices == 0: return
+	rs.mesh_add_surface_from_arrays(mesh, rs.PRIMITIVE_TRIANGLES, ia)
+	rs.mesh_surface_set_material(mesh, 0, material)
+
+
+static func fill_arrays(mesh_array: Array, blocks: PackedByteArray, adjdata: Array[PackedInt64Array]) -> int:
+	assert(mesh_array.size() == am.ARRAY_MAX)
 	var vx: PackedVector2Array
-	var ix: PackedInt32Array # unused..
-	ia[am.ARRAY_VERTEX] = vx
+	mesh_array[am.ARRAY_VERTEX] = vx
 
 	var vxix := 0
 
@@ -137,13 +145,11 @@ func mesh_chunk(mesh: RID, blocks: PackedByteArray, adjdata: Array[PackedInt64Ar
 						vpos,
 						vtx1, vtx2, vtx3,
 						normal, block - 1,
-						vx, ix, vxix,
+						vx, vxix,
 					)
 				line = line >> 1
 				vpos[vecaxis] += 1
-	if vx.size() == 0: return
-	rs.mesh_add_surface_from_arrays(mesh, rs.PRIMITIVE_TRIANGLES, ia)
-	rs.mesh_surface_set_material(mesh, 0, material)
+	return vxix
 
 
 static var _FACE_VTICES: Array[Array] = [
@@ -183,7 +189,6 @@ static func _append_face(
 	texture: int,
 
 	vx: PackedVector2Array,
-	ix: PackedInt32Array,
 	vxix: int,
 ) -> int:
 	assert(texture >= 0)
@@ -256,8 +261,6 @@ static func _append_face(
 	vertex.y = pba.decode_float(4)
 	#debugfile.store_line("\t%s x:%s y:%s z:%s uv:%s n:%s tx:%s; vtx:%s pos1:%s" % [String.num_uint64(f1, 2).pad_zeros(64), pba.decode_u8(0), pba.decode_u8(1), pba.decode_u8(2), pba.decode_u8(3) & 0b11, (pba.decode_u8(3) & 0b11100) >> 2, pba.decode_u16(4) & 0b111111111111, vertex, pos1])
 	vx.append(vertex)
-
-	ix.append(vxix + 0); ix.append(vxix + 1); ix.append(vxix + 2)
 
 	return vxix + 3
 
